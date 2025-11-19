@@ -12,97 +12,130 @@
 </head>
 <body>
     <!-- Navbar -->
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">Supermarket App</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/shopping">Shop</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/cart">View Cart</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
-          </li> 
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <%- include('partials/userNav', { active: 'cart' }) %>
   <!-- Cart Content -->
-  <main>
-  <div class="container">
-    <h2 class="mt-4">Shopping Cart</h2>
-    <% if (cart.length === 0) { %>
-      <p>Your cart is empty.</p>
-    <% } else { %>
-      <table class="table table-bordered align-middle">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% let total = 0; %>
-          <% for (let i = 0; i < cart.length; i++) { %>
-            <tr>
-                <td><%= cart[i].productName %></td>
-                <td><img src="/images/<%= cart[i].image %>" width="80" class="img-thumbnail"></td>
-                <td style="min-width: 260px;">
-                  <form action="/cart/update/<%= cart[i].id %>" method="POST" class="d-flex align-items-center gap-2">
-                    <div class="input-group input-group-sm" style="width: 160px;">
-                      <button class="btn btn-outline-secondary" type="button" onclick="step(<%= cart[i].id %>,-1)">−</button>
-                      <input id="q-input-<%= cart[i].id %>" type="number" class="form-control text-center" name="quantity" value="<%= cart[i].quantity %>" min="1" max="999">
-                      <button class="btn btn-outline-secondary" type="button" onclick="step(<%= cart[i].id %>,1)">+</button>
-                    </div>
-                    <button class="btn btn-sm btn-primary" type="submit">Update</button>
-                  </form>
-                </td>
-                <td>$<%= (cart[i].price * cart[i].quantity).toFixed(2) %></td>
-                <td>
-                  <form action="/cart/remove/<%= cart[i].id %>" method="POST" onsubmit="return confirmRemove(<%- JSON.stringify(cart[i].productName) %>);">
-                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
-                  </form>
-                </td>
-            </tr>
-            <% total += cart[i].price * cart[i].quantity; %>
-          <% }; %>
-        </tbody>
-      </table>
-      <h4>Total: $<%= total.toFixed(2) %></h4>
-
-      <div class="mt-4">
-        <a href="/shopping" class="btn btn-secondary">Back to Shopping</a>
+  <main class="cart-page py-5">
+    <div class="container">
+      <div class="cart-header text-center mb-4">
+        <h1 class="fw-bold">Shopping Cart</h1>
+        <p class="text-muted mb-0">Review your items and adjust quantities before checkout.</p>
       </div>
-    <% } %>
-  </div>
+
+      <% if (messages && messages.length) { %>
+        <div class="alert alert-warning shadow-sm" role="alert">
+          <% messages.forEach(function(message) { %>
+            <div><%= message %></div>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (cart.length === 0) { %>
+        <div class="empty-cart text-center py-5">
+          <p class="lead mb-3">Your cart is empty.</p>
+          <a href="/shopping" class="btn btn-primary btn-lg">Start shopping</a>
+        </div>
+      <% } else { %>
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="card shadow-sm">
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-uppercase small text-muted">
+                      <tr>
+                        <th scope="col" class="px-4">Item</th>
+                        <th scope="col">Price</th>
+                        <th scope="col" style="width:240px;">Quantity</th>
+                        <th scope="col">Total</th>
+                        <th scope="col" class="text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% let total = 0; %>
+                      <% for (let i = 0; i < cart.length; i++) { %>
+                        <tr class="cart-row">
+                          <td class="px-4">
+                            <div class="d-flex align-items-center gap-3">
+                              <img src="/images/<%= cart[i].image %>" class="cart-thumb rounded" alt="<%= cart[i].productName %>">
+                              <div>
+                                <div class="fw-semibold"><%= cart[i].productName %></div>
+                                <div class="text-muted small">SKU #<%= cart[i].id %></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="text-muted">$<%= Number(cart[i].price).toFixed(2) %></td>
+                          <td>
+                            <form action="/cart/update/<%= cart[i].id %>" method="POST" class="d-flex align-items-center flex-wrap gap-2">
+                              <div class="input-group input-group-sm quantity-control">
+                                <button class="btn btn-outline-secondary" type="button" onclick="step(<%= cart[i].id %>,-1)">−</button>
+                                <input id="q-input-<%= cart[i].id %>" type="number" class="form-control text-center" name="quantity" value="<%= cart[i].quantity %>" min="1" max="999">
+                                <button class="btn btn-outline-secondary" type="button" onclick="step(<%= cart[i].id %>,1)">+</button>
+                              </div>
+                              <button class="btn btn-sm btn-primary" type="submit">Update</button>
+                            </form>
+                          </td>
+                          <td class="fw-semibold">$<%= (cart[i].price * cart[i].quantity).toFixed(2) %></td>
+                          <td class="text-center">
+                            <form action="/cart/remove/<%= cart[i].id %>" method="POST" onsubmit="return confirmRemove(<%- JSON.stringify(cart[i].productName) %>);">
+                              <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                            </form>
+                          </td>
+                        </tr>
+                        <% total += cart[i].price * cart[i].quantity; %>
+                      <% }; %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card shadow-sm sticky-md-top summary-card">
+              <div class="card-body">
+                <h4 class="fw-bold mb-3">Order Summary</h4>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">Items (<%= cart.length %>)</span>
+                  <span>$<%= total.toFixed(2) %></span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="text-muted">Total</span>
+                  <span class="fs-4 fw-bold">$<%= total.toFixed(2) %></span>
+                </div>
+                <div class="d-grid gap-2">
+                  <a href="/cart/checkout" class="btn btn-primary btn-lg">Checkout</a>
+                  <a href="/shopping" class="btn btn-outline-secondary">Continue Shopping</a>
+                  <form action="/cart/clear" method="POST" onsubmit="return confirm('Clear all items from your cart?');">
+                    <button type="submit" class="btn btn-outline-danger w-100">Clear Cart</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
   </main>
 <style>
-  body { min-height: 100vh; display: flex; flex-direction: column; }
+  body { min-height: 100vh; display: flex; flex-direction: column; background: #f5f7fb; }
   main { flex: 1 0 auto; }
   footer { flex-shrink: 0; margin-top: auto; }
+  .cart-page { background: linear-gradient(180deg, #f5f7fb 0%, #ffffff 60%); }
+  .cart-header h1 { font-size: 2.4rem; }
+  .cart-thumb { width: 70px; height: 70px; object-fit: cover; border: 1px solid #eee; }
+  .quantity-control { max-width: 170px; }
+  .summary-card { top: 1rem; }
+  .empty-cart { background: #fff; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.07); }
+  .cart-row { transition: background .2s ease; }
+  .cart-row:hover { background: #f8fbff; }
   .app-footer { background-color: #0b2131; color: #e6edf3; }
   .app-footer a { color: #e6edf3; text-decoration: none; }
   .app-footer a:hover { text-decoration: underline; }
   .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
   .app-footer-inner { font-size: .95rem; }
 </style>
-<footer>
-  <div class="app-footer-gradient"></div>
-  <div class="app-footer py-3">
-    <div class="container text-center app-footer-inner">
-      <span>&copy; <script>document.write(new Date().getFullYear());</script> <strong>Supermarket App</strong>. All Rights Reserved.</span>
-    </div>
-  </div>
-</footer>
+<%- include('partials/footer') %>
 <script>
   function step(id, delta) {
     var input = document.getElementById('q-input-' + id);
