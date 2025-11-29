@@ -1,85 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <title>Supermarket App</title>
+  <meta charset="UTF-8"> <!-- NOTE: Set page encoding -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- NOTE: Make mobile responsive -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- NOTE: Bootstrap CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- NOTE: Bootstrap JS -->
+  <title>Supermarket App</title> <!-- NOTE: Browser tab title -->
+
   <style>
-    body { background-color: #f7f7f9; }
-    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); }
-    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
-    .page-header { border-bottom: 1px solid #eee; padding-bottom: .75rem; margin-bottom: 1rem; }
-    .product-img-lg { width: 100%; max-width: 420px; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; border: 1px solid #eee; background: #fff; }
-    .price-lg { font-size: 2rem; font-weight: 700; }
-    .muted { color: #6c757d; }
+    body { background-color: #f7f7f9; } /* NOTE: Light grey background */
+    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); } /* NOTE: Slight navbar shadow */
+    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); } /* NOTE: Main content card */
+    .page-header { border-bottom: 1px solid #eee; padding-bottom: .75rem; margin-bottom: 1rem; } /* NOTE: Header line */
+    .product-img-lg { width: 100%; max-width: 420px; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; border: 1px solid #eee; background: #fff; } /* NOTE: Large product image style */
+    .price-lg { font-size: 2rem; font-weight: 700; } /* NOTE: Big price text */
+    .muted { color: #6c757d; } /* NOTE: Grey color text */
   </style>
+
   <script>
     function imgFallback(img){ img.onerror=null; img.src='/images/placeholder.png'; }
+    // NOTE: Replace missing images with placeholder
   </script>
-  <!-- If no placeholder.png exists in /public/images, the onerror will simply not change -->
 </head>
-<body>
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">Supermarket App</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav">
-          <% if (user && user.role === 'admin') { %>
-            <li class="nav-item"><a class="nav-link" href="/inventory">Inventory</a></li>
-            <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
-          <% } else { %>
-            <li class="nav-item"><a class="nav-link" href="/shopping">Shop</a></li>
-            <li class="nav-item"><a class="nav-link" href="/cart">View Cart</a></li>
-          <% } %>
-          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
 
+<body>
+  <%- include('partials/userNav', { active: 'shop' }) %>
+  <!-- NOTE: Includes the user navbar and highlights the “Shop” page -->
+
+  
   <div class="container my-4">
-    <div class="mb-2 text-muted">Welcome, <strong><%= user.username %></strong> (<%= user.role %>)</div>
+    <div class="mb-2 text-muted">
+      Welcome, <strong><%= user.username %></strong> (<%= user.role %>)
+      <!-- NOTE: Shows logged-in username + role -->
+    </div>
 
     <div class="d-flex align-items-center gap-2 small mb-3">
-      <% if (user && user.role === 'admin') { %>
-        <a href="/inventory" class="text-decoration-none">
-          <span class="me-1">←</span> Back to Inventory
-        </a>
-      <% } else { %>
-        <a href="/shopping" class="text-decoration-none">
-          <span class="me-1">←</span> Back to Shop
-        </a>
-      <% } %>
+      <a href="/shopping" class="text-decoration-none">
+        <span class="me-1">&larr;</span> Back to Shop
+      </a>
+      <!-- NOTE: Simple “Back to Shop” link with arrow -->
     </div>
 
     <div class="page-card p-4">
       <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h2 class="m-0">Product Details</h2>
-        <% if (user && user.role === 'admin' && product) { %>
-          <div class="d-flex gap-2">
-            <a href="/updateProduct/<%= product.id %>" class="btn btn-outline-primary btn-sm">Edit</a>
-            <a href="/deleteProduct/<%= product.id %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete <%= product.productName %>?')">Delete</a>
-          </div>
-        <% } %>
+        <h2 class="m-0">Product Details</h2> <!-- NOTE: Page title -->
       </div>
 
-      <% if (product) { %>
+      <% if (product) { %> 
+        <!-- NOTE: Only show details if product exists -->
+
         <div class="row g-4 align-items-start">
+          
+          <!-- LEFT SIDE: PRODUCT IMAGE -->
           <div class="col-12 col-md-5 text-center">
-            <img class="product-img-lg" src="/images/<%= product.image %>" alt="<%= product.productName %>" onerror="imgFallback(this)">
+            <img
+              class="product-img-lg"
+              src="/images/<%= product.image %>"
+              alt="<%= product.productName %>"
+              onerror="imgFallback(this)">
+            <!-- NOTE: Big product image with fallback -->
           </div>
+
+          <!-- RIGHT SIDE: PRODUCT INFO -->
           <div class="col-12 col-md-7">
             <h3 class="fw-semibold"><%= product.productName %></h3>
+            <!-- NOTE: Product name -->
 
             <div class="d-flex align-items-center gap-3 mt-2">
               <div class="price-lg">$<%= product.price.toFixed(2) %></div>
+              <!-- NOTE: Price formatted to 2 decimals -->
+
               <div>
-                <% const qty = Number(product.quantity) || 0; %>
+                <% const qty = Number(product.quantity) || 0; %> <!-- NOTE: Convert quantity to number -->
                 <% if (qty > 20) { %>
                   <span class="badge bg-success">In stock: <%= qty %></span>
                 <% } else if (qty > 0) { %>
@@ -87,64 +79,86 @@
                 <% } else { %>
                   <span class="badge bg-danger">Out of stock</span>
                 <% } %>
+                <!-- NOTE: Show stock badge depending on quantity -->
               </div>
             </div>
 
             <div class="mt-4">
               <% if ((Number(product.quantity) || 0) > 0) { %>
+                <!-- NOTE: Only allow adding to cart if product has stock -->
+
                 <form action="/add-to-cart/<%= product.id %>" method="POST" class="row g-2 align-items-center">
+                  
                   <div class="col-auto">
-                    <label for="qty" class="col-form-label muted">Quantity</label>
+                    <label for="qty" class="col-form-label muted">
+                      Quantity
+                    </label>
+                    <!-- NOTE: Label for quantity selector -->
                   </div>
+
                   <div class="col-auto">
                     <select id="qty" name="quantity" class="form-select">
-                      <% const maxQ = Math.min(5, Number(product.quantity) || 0); for (let q=1;q<=maxQ;q++){ %>
+                      <% const maxQ = Number(product.quantity) || 0; for (let q=1; q<=maxQ; q++) { %>
                         <option value="<%= q %>"><%= q %></option>
                       <% } %>
                     </select>
+                    <!-- NOTE: Dropdown quantity options from 1 → max stock -->
                   </div>
+
                   <div class="col-auto">
-                    <button type="submit" name="redirect" value="stay" class="btn btn-outline-primary">Add to Cart</button>
+                    <button type="submit" name="redirect" value="stay" class="btn btn-outline-primary">
+                      Add to Cart
+                    </button>
+                    <!-- NOTE: Add to cart but stay on product page  -->
                   </div>
+
                   <div class="col-auto">
-                    <button type="submit" name="redirect" value="cart" class="btn btn-primary">Buy Now</button>
+                    <button type="submit" name="redirect" value="cart" class="btn btn-primary">
+                      Buy Now
+                    </button>
+                    <!-- NOTE: Add to cart and go straight to cart -->
                   </div>
                 </form>
+
               <% } else { %>
+                <!-- NOTE: When product is out of stock -->
                 <div class="alert alert-light border d-flex align-items-center" role="alert">
                   <span class="me-2">This item is currently unavailable.</span>
-                  <% if (user && user.role === 'admin') { %>
-                    <a href="/updateProduct/<%= product.id %>" class="alert-link">Update stock</a>
-                  <% } %>
                 </div>
               <% } %>
             </div>
 
-          </div>
-        </div>
+          </div> <!-- END RIGHT SIDE -->
+
+        </div> <!-- END ROW -->
+
       <% } else { %>
+        <!-- NOTE: If product not found -->
         <div class="text-center text-muted py-5">No product found.</div>
       <% } %>
-    </div>
-  </div>
+
+    </div> <!-- END CARD -->
+  </div> <!-- END CONTAINER -->
+
 <style>
-  :root { --app-footer-height: 68px; }
-  html, body { height: 100%; }
-  body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 28px); }
-  .app-footer { background-color: #0b2131; color: #e6edf3; }
+  :root { --app-footer-height: 68px; } /* NOTE: Footer height CSS variable */
+  html, body { height: 100%; } /* NOTE: Allow full height layout */
+  body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 28px); } /* NOTE: Prevent footer overlap */
+  .app-footer { background-color: #0b2131; color: #e6edf3; } /* NOTE: Footer background color */
   .app-footer a { color: #e6edf3; text-decoration: none; }
   .app-footer a:hover { text-decoration: underline; }
-  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; }
-  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
-  .app-footer-inner { font-size: .95rem; }
+  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; } /* NOTE: Make footer fixed */
+  
+  .app-footer-gradient { 
+    height: 4px; 
+    background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545));
+  } /* NOTE: Colorful bar above footer */
+
+  .app-footer-inner { font-size: .95rem; } /* NOTE: Footer text size */
 </style>
-<footer class="app-footer-fixed">
-  <div class="app-footer-gradient"></div>
-  <div class="app-footer py-3">
-    <div class="container text-center app-footer-inner">
-      <span>&copy; <script>document.write(new Date().getFullYear());</script> <strong>Supermarket App</strong>. All Rights Reserved.</span>
-    </div>
-  </div>
-</footer>
+
+<%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
+<!-- NOTE: Include footer and make it fixed to bottom -->
+
 </body>
 </html>

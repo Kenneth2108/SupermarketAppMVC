@@ -1,136 +1,309 @@
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <title>Supermarket App</title>
-  </head>
-  <body>
-      <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="/">Supermarket App</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="collapsibleNavbar">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="/register">Register</a>
-              </li> 
-              <li class="nav-item">
-                <a class="nav-link" href="/Login">Login</a>
-              </li> 
-            </ul>
-          </div>
-        </div>
-      </nav>
-    <main class="container py-5">
-      <div class="row justify-content-center">
-        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-          <div class="card shadow-sm border-0">
-            <div class="card-body p-4 p-md-5">
-              <h1 class="h3 mb-3 fw-bold text-center">Create your account</h1>
-              <p class="text-secondary text-center mb-4">Join us and start shopping</p>
+  <meta charset="UTF-8"> <!-- NOTE: Set character encoding -->
+  <title>Supermarket App — Register</title> <!-- NOTE: Browser tab title -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- NOTE: Responsive on mobile -->
 
-              <% if (messages && messages.length > 0) { %>
-                <div class="alert alert-danger" role="alert">
-                  <% messages.forEach(function(message) { %>
-                    <div><%= message %></div>
-                  <% }); %>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- NOTE: Bootstrap CSS -->
+
+  <style>
+    body {
+      background-color: #f8f9fa; /* NOTE: Keep same light grey background */
+    }
+
+    .register-card {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 40px 35px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.08); /* NOTE: Main card styling */
+    }
+
+    .register-title {
+      font-weight: 700;
+      margin-bottom: 6px; /* NOTE: Heading style */
+    }
+
+    .twofa-box {
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 16px;
+      background: #fafafa; /* NOTE: Light box behind 2FA content */
+    }
+
+    .btn-primary {
+      padding: 12px;
+      font-size: 1.1rem;
+      border-radius: 8px; /* NOTE: Slightly larger primary button */
+    }
+
+    .app-footer { background-color: #0b2131; color: #e6edf3; }
+    .app-footer a { color: #e6edf3; text-decoration: none; }
+    .app-footer a:hover { text-decoration: underline; }
+    .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
+    .app-footer-inner { font-size: .95rem; }
+    footer { margin-top: 60px; } /* NOTE: Space above footer */
+  </style>
+</head>
+<body>
+
+  <!-- original navbar -->
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark"> <!-- NOTE: Simple dark navbar -->
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">Supermarket App</a> <!-- NOTE: Brand link -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span> <!-- NOTE: Mobile menu icon -->
+      </button>
+      <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/register">Register</a> <!-- NOTE: Register link -->
+          </li> 
+          <li class="nav-item">
+            <a class="nav-link" href="/login">Login</a> <!-- NOTE: Login link -->
+          </li> 
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="register-card">
+      <h2 class="text-center register-title">Create your account</h2> <!-- NOTE: Main heading -->
+      <p class="text-center text-muted mb-4">Join us and start shopping</p> <!-- NOTE: Subtitle -->
+
+      <% if (messages && messages.length > 0) { %> <!-- NOTE: Show any error messages from server -->
+        <div class="alert alert-danger">
+          <% messages.forEach(function(message) { %>
+            <div><%= message %></div>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% const hasTwofa = (typeof twofa !== 'undefined' && twofa); %> <!-- NOTE: Check if 2FA data (secret + QR) was generated -->
+
+      <form action="/register" method="POST" class="needs-validation" novalidate>
+        <!-- NOTE: Registration form posts to /register, using Bootstrap validation -->
+
+        <div class="row g-4">
+
+          <!-- LEFT SIDE -->
+          <div class="col-md-7">
+
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input
+                type="text"
+                name="username"
+                class="form-control form-control-lg"
+                placeholder="Your name"
+                required
+                value="<%= formData && formData.username ? formData.username : '' %>">
+              <!-- NOTE: Username, prefilled from formData if validation failed -->
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control form-control-lg"
+                placeholder="you@example.com"
+                required
+                value="<%= formData && formData.email ? formData.email : '' %>">
+              <!-- NOTE: HTML5 email validation + prefill -->
+              <div class="invalid-feedback">Please enter a valid email address.</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <div class="input-group input-group-lg">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="form-control"
+                  placeholder="Choose a strong password"
+                  required
+                  minlength="6"
+                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}"
+                  title="At least 6 chars with 1 uppercase, 1 lowercase, and 1 number.">
+                <!-- NOTE: Client-side rule: min 6 chars, must include upper, lower, digit -->
+                <button class="btn btn-outline-secondary" type="button" id="togglePwd">Show</button>
+                <!-- NOTE: Toggle show/hide password -->
+              </div>
+              <div class="form-text">
+                Use 6+ characters with uppercase, lowercase, and a number.
+              </div>
+              <div class="invalid-feedback">
+                Password must be at least 6 characters and include uppercase, lowercase, and a number.
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  class="form-control form-control-lg"
+                  placeholder="Street, City"
+                  required
+                  value="<%= formData && formData.address ? formData.address : '' %>">
+                <!-- NOTE: Simple text address, required -->
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Contact Number</label>
+                <input
+                  type="text"
+                  name="contact"
+                  class="form-control form-control-lg"
+                  placeholder="e.g. 12345678"
+                  required
+                  pattern="\d{8}"
+                  maxlength="8"
+                  value="<%= formData && formData.contact ? formData.contact : '' %>">
+                <!-- NOTE: Must be exactly 8 digits -->
+                <div class="invalid-feedback">Please provide an 8-digit contact number.</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT SIDE (2FA) -->
+          <div class="col-md-5">
+            <div class="form-check form-switch mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="enable2fa"
+                name="enable2fa"
+                <%= formData && formData.enable2fa === 'on' ? 'checked' : '' %>>
+              <!-- NOTE: Toggle whether user wants to enable 2FA now -->
+              <label class="form-check-label" for="enable2fa">
+                Enable Two-Factor Authentication (TOTP)
+              </label>
+            </div>
+
+            <div
+              id="twofaSection"
+              class="twofa-box <%= formData && formData.enable2fa === 'on' ? '' : 'd-none' %>">
+              <!-- NOTE: 2FA section is hidden unless checkbox was checked -->
+
+              <% if (hasTwofa) { %>
+                <!-- NOTE: twofa object exists (server generated QR + secret) -->
+
+                <p class="mb-2">
+                  Scan this QR with Google Authenticator / Microsoft Authenticator:
+                </p>
+
+                <div class="text-center mb-3">
+                  <img
+                    src="<%= twofa.qr %>"
+                    alt="2FA QR"
+                    class="img-fluid border rounded"
+                    style="max-width:200px;">
+                  <!-- NOTE: QR code image for authenticator apps -->
+                </div>
+
+                <p class="text-muted mb-2">
+                  Then enter the current 6-digit code below.
+                </p>
+
+                <input type="hidden" name="twofa_secret" value="<%= twofa.secret %>">
+                <!-- NOTE: Hidden field to send the shared secret to server -->
+
+                <div class="mb-2">
+                  <label class="form-label" for="twofa_token">Authenticator code</label>
+                  <input
+                    id="twofa_token"
+                    name="twofa_token"
+                    class="form-control text-center"
+                    type="tel"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    placeholder="123456"
+                    required>
+                    
+                  <!-- NOTE: 6-digit TOTP code input -->
+                </div>
+
+              <% } else { %>
+                <!-- NOTE: When twofa object not passed from server -->
+                <div class="alert alert-warning mb-0">
+                  2FA QR code is not generated yet. You can enable 2FA later from your account.
                 </div>
               <% } %>
-
-              <form action="/register" method="POST" class="needs-validation" novalidate>
-                <div class="mb-3">
-                  <label for="username" class="form-label">Username</label>
-                  <input type="text" id="username" name="username" class="form-control form-control-lg" placeholder="Your name" required
-                    <% if (formData && formData.username) { %> value="<%= formData.username %>" <% } %> >
-                  <div class="invalid-feedback">Please enter your username.</div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
-                  <input type="email" id="email" name="email" class="form-control form-control-lg" placeholder="you@example.com" required
-                    <% if (formData && formData.email) { %> value="<%= formData.email %>" <% } %> >
-                  <div class="invalid-feedback">Please provide a valid email.</div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <div class="input-group input-group-lg">
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Choose a strong password" required>
-                    <button class="btn btn-outline-secondary" type="button" id="togglePwd">Show</button>
-                  </div>
-                  <div class="form-text">Use 8+ characters with letters and numbers.</div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="address" class="form-label">Address</label>
-                  <input type="text" id="address" name="address" class="form-control form-control-lg" placeholder="Street, City" required
-                    <% if (formData && formData.address) { %> value="<%= formData.address %>" <% } %> >
-                  <div class="invalid-feedback">Please enter your address.</div>
-                </div>
-
-                <div class="mb-4">
-                  <label for="contact" class="form-label">Contact Number</label>
-                  <input type="text" id="contact" name="contact" class="form-control form-control-lg" placeholder="e.g. 012-3456789" required
-                    <% if (formData && formData.contact) { %> value="<%= formData.contact %>" <% } %> >
-                  <div class="invalid-feedback">Please provide a contact number.</div>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg w-100">Register</button>
-                <div class="text-center mt-3">
-                  <small class="text-muted">Already have an account? <a href="/login">Log in</a></small>
-                </div>
-              </form>
             </div>
           </div>
+
         </div>
-      </div>
-    </main>
-<style>
-  html { scroll-behavior: smooth; }
-  body { min-height: 100vh; display: flex; flex-direction: column; }
-  main { flex: 1 0 auto; }
-  footer { flex-shrink: 0; margin-top: auto; }
-  .app-footer { background-color: #0b2131; color: #e6edf3; }
-  .app-footer a { color: #e6edf3; text-decoration: none; }
-  .app-footer a:hover { text-decoration: underline; }
-  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
-  .app-footer-inner { font-size: .95rem; }
-</style>
-<footer>
-  <div class="app-footer-gradient"></div>
-  <div class="app-footer py-3">
-    <div class="container text-center app-footer-inner">
-      <span>&copy; <script>document.write(new Date().getFullYear());</script> <strong>Supermarket App</strong>. All Rights Reserved.</span>
+
+        <button type="submit" style= "background-color:lightcoral;" class="btn btn-primary w-100 mt-4">Register</button>
+        <!-- NOTE: Submit registration -->
+
+        <div class="text-center mt-3">
+          <small class="text-muted">
+            Already have an account? <a href="/login">Log in</a>
+          </small>
+          <!-- NOTE: Link back to login page -->
+        </div>
+      </form>
     </div>
-  </div>
-</footer>
-<script>
-  // Client-side validation styling
-  (function () {
-    const forms = document.querySelectorAll('.needs-validation');
-    Array.prototype.slice.call(forms).forEach(function (form) {
-      form.addEventListener('submit', function (event) {
-        if (!form.checkValidity()) {
-          event.preventDefault();
+  </main>
+
+  <%- include('partials/footer') %> <!-- NOTE: Shared footer include -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- NOTE: Bootstrap JS (duplicate include is okay but not necessary) -->
+
+  <script>
+    // Toggle password visibility
+    document.getElementById('togglePwd').addEventListener('click', function () {
+      const input = document.getElementById('password');
+      const isPwd = input.type === "password";          // NOTE: Check current field type
+      input.type = isPwd ? "text" : "password";         // NOTE: Swap between password/text
+      this.textContent = isPwd ? "Hide" : "Show";       // NOTE: Update button label
+    });
+
+    // Toggle 2FA section
+    const cb = document.getElementById('enable2fa');     // NOTE: 2FA checkbox
+    const box = document.getElementById('twofaSection'); // NOTE: 2FA container box
+    const tokenInput = document.getElementById('twofa_token'); // NOTE: 2FA code input (may be null if hasTwofa = false)
+
+    if (cb && box) {
+      const syncTwofaState = function () {
+        if (cb.checked) {
+          box.classList.remove('d-none');    // NOTE: Show 2FA box
+          if (tokenInput) tokenInput.required = true; // NOTE: Require code if visible
+        } else {
+          box.classList.add('d-none');       // NOTE: Hide 2FA box
+          if (tokenInput) {
+            tokenInput.required = false;     // NOTE: No longer required if disabled
+            tokenInput.value = '';           // NOTE: Clear any previous value
+          }
+        }
+      };
+
+      cb.addEventListener('change', syncTwofaState); // NOTE: Run when checkbox changes
+      syncTwofaState();                              // NOTE: Sync on page load (in case pre-checked)
+    }
+
+    // Bootstrap-style validation so the email field enforces email format
+    const registerForm = document.querySelector('.needs-validation');
+    if (registerForm) {
+      registerForm.addEventListener('submit', function (event) {
+        if (!registerForm.checkValidity()) { // NOTE: Use browser's constraint validation API
+          event.preventDefault();            // NOTE: Stop submit if invalid
           event.stopPropagation();
         }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  })();
-  // Toggle password visibility
-  const toggle = document.getElementById('togglePwd');
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      const input = document.getElementById('password');
-      const isPwd = input.getAttribute('type') === 'password';
-      input.setAttribute('type', isPwd ? 'text' : 'password');
-      this.textContent = isPwd ? 'Hide' : 'Show';
-    });
-  }
-</script>
+        registerForm.classList.add('was-validated'); // NOTE: Add Bootstrap visual validation classes
+      });
+    }
+  </script>
 </body>
 </html>

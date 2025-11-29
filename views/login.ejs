@@ -18,7 +18,7 @@
                 <a class="nav-link" href="/register">Register</a>
               </li> 
               <li class="nav-item">
-                <a class="nav-link" href="/Login">Login</a>
+                <a class="nav-link" href="/login">Login</a>
               </li> 
             </ul>
           </div>
@@ -61,7 +61,7 @@
                   </div>
                   <div class="form-text">Never share your password with anyone.</div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
+                <button type="submit" class="btn btn-primary btn-lg w-100" style= "background-color:lightcoral;">Login</button>
                 <div class="text-center mt-3">
                   <small class="text-muted">Don’t have an account? <a href="/register">Register</a></small>
                 </div>
@@ -82,14 +82,7 @@
   .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
   .app-footer-inner { font-size: .95rem; }
 </style>
-<footer>
-  <div class="app-footer-gradient"></div>
-  <div class="app-footer py-3">
-    <div class="container text-center app-footer-inner">
-      <span>&copy; <script>document.write(new Date().getFullYear());</script> <strong>Supermarket App</strong>. All Rights Reserved.</span>
-    </div>
-  </div>
-</footer>
+  <%- include('partials/footer') %>
 <script>
   // Client-side validation styling
   (function () {

@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Your Cart</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8"> <!-- Use UTF-8 encoding -->
+  <title>Your Cart</title> <!-- Browser tab title -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- Bootstrap 5 CSS -->
+
   <script>
+    // Simple confirm dialog for removing a single item
     function confirmRemove(name) {
       return confirm(`Do you wish to remove ${name}?`);
     }
   </script>
 </head>
 <body>
-    <!-- Navbar -->
+  <!-- User navbar – highlight cart tab -->
   <%- include('partials/userNav', { active: 'cart' }) %>
+
   <!-- Cart Content -->
   <main class="cart-page py-5">
     <div class="container">
+      <!-- Page header section -->
       <div class="cart-header text-center mb-4">
         <h1 class="fw-bold">Shopping Cart</h1>
         <p class="text-muted mb-0">Review your items and adjust quantities before checkout.</p>
       </div>
 
+      <!-- Flash messages (e.g. insufficient stock) -->
       <% if (messages && messages.length) { %>
         <div class="alert alert-warning shadow-sm" role="alert">
           <% messages.forEach(function(message) { %>
@@ -29,124 +34,278 @@
         </div>
       <% } %>
 
+      <!-- Empty cart state -->
       <% if (cart.length === 0) { %>
         <div class="empty-cart text-center py-5">
           <p class="lead mb-3">Your cart is empty.</p>
           <a href="/shopping" class="btn btn-primary btn-lg">Start shopping</a>
         </div>
+
       <% } else { %>
-        <div class="row g-4">
+        <!-- Cart layout: items on left, summary on right -->
+        <div class="row g-4 cart-layout">
+          <!-- Cart items column -->
           <div class="col-lg-8">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm cart-card h-100">
+              <div class="card-header bg-white border-0 pt-4 pb-3 px-4">
+                <p class="text-uppercase text-muted small mb-0 ls-wide">Items in Cart</p>
+              </div>
+
               <div class="card-body p-0">
                 <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-uppercase small text-muted">
+                  <table class="table table-hover align-middle mb-0 cart-table">
+                    <thead>
                       <tr>
                         <th scope="col" class="px-4">Item</th>
-                        <th scope="col">Price</th>
-                        <th scope="col" style="width:240px;">Quantity</th>
-                        <th scope="col">Total</th>
+                        <th scope="col" class="text-center">Price</th>
+                        <th scope="col" style="width:260px;">Quantity</th>
+                        <th scope="col" class="text-center">Total</th>
                         <th scope="col" class="text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <% let total = 0; %>
+                      <% let total = 0; %> <!-- Running subtotal (without tax) -->
                       <% for (let i = 0; i < cart.length; i++) { %>
                         <tr class="cart-row">
+                          <!-- Product thumbnail + name -->
                           <td class="px-4">
                             <div class="d-flex align-items-center gap-3">
-                              <img src="/images/<%= cart[i].image %>" class="cart-thumb rounded" alt="<%= cart[i].productName %>">
+                              <img
+                                src="/images/<%= cart[i].image %>"
+                                class="cart-thumb rounded"
+                                alt="<%= cart[i].productName %>">
                               <div>
-                                <div class="fw-semibold"><%= cart[i].productName %></div>
-                                <div class="text-muted small">SKU #<%= cart[i].id %></div>
+                                <div class="cart-item-title"><%= cart[i].productName %></div>
+                                <div class="cart-item-meta">Added item #<%= i + 1 %></div>
                               </div>
                             </div>
                           </td>
-                          <td class="text-muted">$<%= Number(cart[i].price).toFixed(2) %></td>
+
+                          <!-- Unit price -->
+                          <td class="text-center text-muted fw-semibold">
+                            $<%= Number(cart[i].price).toFixed(2) %>
+                          </td>
+
+                          <!-- Quantity controls (minus / input / plus + Update button) -->
                           <td>
-                            <form action="/cart/update/<%= cart[i].id %>" method="POST" class="d-flex align-items-center flex-wrap gap-2">
+                            <form
+                              action="/cart/update/<%= cart[i].id %>"
+                              method="POST"
+                              class="d-flex align-items-center flex-wrap gap-2 justify-content-center">
                               <div class="input-group input-group-sm quantity-control">
-                                <button class="btn btn-outline-secondary" type="button" onclick="step(<%= cart[i].id %>,-1)">−</button>
-                                <input id="q-input-<%= cart[i].id %>" type="number" class="form-control text-center" name="quantity" value="<%= cart[i].quantity %>" min="1" max="999">
-                                <button class="btn btn-outline-secondary" type="button" onclick="step(<%= cart[i].id %>,1)">+</button>
+                                <button
+                                  class="btn btn-outline-secondary"
+                                  type="button"
+                                  onclick="step(<%= cart[i].id %>,-1)">-</button>
+                                <input
+                                  id="q-input-<%= cart[i].id %>"
+                                  type="number"
+                                  class="form-control text-center"
+                                  name="quantity"
+                                  value="<%= cart[i].quantity %>"
+                                  min="1"
+                                  max="999">
+                                <button
+                                  class="btn btn-outline-secondary"
+                                  type="button"
+                                  onclick="step(<%= cart[i].id %>,1)">+</button>
                               </div>
                               <button class="btn btn-sm btn-primary" type="submit">Update</button>
                             </form>
                           </td>
-                          <td class="fw-semibold">$<%= (cart[i].price * cart[i].quantity).toFixed(2) %></td>
+
+                          <!-- Row total (price * quantity) -->
+                          <td class="text-center fw-semibold">
+                            $<%= (cart[i].price * cart[i].quantity).toFixed(2) %>
+                          </td>
+
+                          <!-- Remove single item button -->
                           <td class="text-center">
-                            <form action="/cart/remove/<%= cart[i].id %>" method="POST" onsubmit="return confirmRemove(<%- JSON.stringify(cart[i].productName) %>);">
-                              <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                            <form
+                              action="/cart/remove/<%= cart[i].id %>"
+                              method="POST"
+                              onsubmit="return confirmRemove(<%- JSON.stringify(cart[i].productName) %>);">
+                              <button type="submit" class="btn btn-sm btn-outline-danger">
+                                Remove
+                              </button>
                             </form>
                           </td>
                         </tr>
+
+                        <!-- Accumulate subtotal for all items -->
                         <% total += cart[i].price * cart[i].quantity; %>
                       <% }; %>
                     </tbody>
                   </table>
+
+                  <!-- Calculate tax + grand total on server side and pass to EJS -->
+                  <% const taxRate = 0.09;
+                     const taxAmount = Number((total * taxRate).toFixed(2));
+                     const grandTotal = Number((total + taxAmount).toFixed(2)); %>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Order summary column -->
           <div class="col-lg-4">
-            <div class="card shadow-sm sticky-md-top summary-card">
+            <div class="card shadow-sm sticky-md-top summary-card h-100">
               <div class="card-body">
-                <h4 class="fw-bold mb-3">Order Summary</h4>
-                <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Items (<%= cart.length %>)</span>
-                  <span>$<%= total.toFixed(2) %></span>
-                </div>
-                <hr>
+                <!-- Summary header + item count badge -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-muted">Total</span>
-                  <span class="fs-4 fw-bold">$<%= total.toFixed(2) %></span>
+                  <h4 class="fw-bold mb-0">Order Summary</h4>
+                  <span class="badge rounded-pill bg-light text-secondary fw-semibold">
+                    Items: <%= cart.length %>
+                  </span>
                 </div>
-                <div class="d-grid gap-2">
+
+                <!-- Subtotal + tax -->
+                <ul class="list-unstyled mb-4">
+                  <li class="d-flex justify-content-between text-muted mb-2">
+                    <span>Subtotal</span>
+                    <span>$<%= total.toFixed(2) %></span>
+                  </li>
+                  <li class="d-flex justify-content-between text-muted mb-0">
+                    <span>Estimated Tax (9%)</span>
+                    <span>$<%= taxAmount.toFixed(2) %></span>
+                  </li>
+                </ul>
+
+                <!-- Grand total block -->
+                <div class="summary-total mb-4">
+                  <span class="text-muted text-uppercase small">Total Due</span>
+                  <div class="display-6 fw-bold mb-0">
+                    $<%= grandTotal.toFixed(2) %>
+                  </div>
+                </div>
+
+                <!-- Actions: Checkout / Continue / Clear -->
+                <div class="d-grid gap-2 summary-actions">
                   <a href="/cart/checkout" class="btn btn-primary btn-lg">Checkout</a>
                   <a href="/shopping" class="btn btn-outline-secondary">Continue Shopping</a>
-                  <form action="/cart/clear" method="POST" onsubmit="return confirm('Clear all items from your cart?');">
-                    <button type="submit" class="btn btn-outline-danger w-100">Clear Cart</button>
+
+                  <!-- Clear entire cart -->
+                  <form
+                    action="/cart/clear"
+                    method="POST"
+                    onsubmit="return confirm('Clear all items from your cart?');">
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                      Clear Cart
+                    </button>
                   </form>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </div> <!-- /row -->
       <% } %>
     </div>
   </main>
-<style>
-  body { min-height: 100vh; display: flex; flex-direction: column; background: #f5f7fb; }
-  main { flex: 1 0 auto; }
-  footer { flex-shrink: 0; margin-top: auto; }
-  .cart-page { background: linear-gradient(180deg, #f5f7fb 0%, #ffffff 60%); }
-  .cart-header h1 { font-size: 2.4rem; }
-  .cart-thumb { width: 70px; height: 70px; object-fit: cover; border: 1px solid #eee; }
-  .quantity-control { max-width: 170px; }
-  .summary-card { top: 1rem; }
-  .empty-cart { background: #fff; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.07); }
-  .cart-row { transition: background .2s ease; }
-  .cart-row:hover { background: #f8fbff; }
-  .app-footer { background-color: #0b2131; color: #e6edf3; }
-  .app-footer a { color: #e6edf3; text-decoration: none; }
-  .app-footer a:hover { text-decoration: underline; }
-  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
-  .app-footer-inner { font-size: .95rem; }
-</style>
-<%- include('partials/footer') %>
-<script>
-  function step(id, delta) {
-    var input = document.getElementById('q-input-' + id);
-    if (!input) return;
-    var min = Number(input.min || 1), max = Number(input.max || 999);
-    var val = Number(input.value || 1) + Number(delta || 0);
-    if (!Number.isFinite(val)) val = min;
-    if (val < min) val = min;
-    if (val > max) val = max;
-    input.value = val;
-  }
-</script>
+
+  <!-- Page + footer styling -->
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #f5f7fb; /* Light blue/grey background */
+    }
+    main { flex: 1 0 auto; }           /* Main content grows */
+    footer { flex-shrink: 0; margin-top: auto; } /* Footer stays at bottom */
+
+    .cart-page {
+      background: linear-gradient(180deg, #f5f7fb 0%, #ffffff 60%);
+    }
+    .cart-header h1 { font-size: 2.4rem; }
+    .cart-layout { align-items: stretch; }
+
+    .cart-card { border: none; border-radius: 1.5rem; }
+    .cart-card .card-header { border-bottom: 1px solid #f0f4ff; }
+
+    .ls-wide { letter-spacing: .35rem; }
+
+    .cart-table thead {
+      background: #f6f7fb;
+      text-transform: uppercase;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      color: #94a3b8;
+    }
+    .cart-table tbody td { vertical-align: middle; }
+
+    .cart-thumb {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+    }
+
+    .cart-item-title { font-weight: 600; font-size: 1.05rem; }
+    .cart-item-meta { font-size: .85rem; color: #8da0b7; }
+
+    .quantity-control { max-width: 210px; }
+    .quantity-control .btn { width: 40px; }
+    .quantity-control .form-control { font-weight: 600; }
+
+    .summary-card { top: 1rem; border: none; border-radius: 1.5rem; }
+    .summary-card .card-body { padding: 2rem; }
+
+    .summary-total {
+      background: #f5f7fb;
+      padding: 1rem 1.25rem;
+      border-radius: 1rem;
+    }
+
+    .summary-actions .btn { border-radius: .85rem; }
+    .summary-actions .btn-outline-danger { border-width: 2px; }
+
+    .empty-cart {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.07);
+    }
+
+    .cart-row { transition: background .2s ease; }
+    .cart-row:hover { background: #f8fbff; }
+
+    /* Footer styling (matches rest of app) */
+    .app-footer { background-color: #0b2131; color: #e6edf3; }
+    .app-footer a { color: #e6edf3; text-decoration: none; }
+    .app-footer a:hover { text-decoration: underline; }
+    .app-footer-gradient {
+      height: 4px;
+      background: linear-gradient(
+        90deg,
+        var(--bs-primary, #0d6efd),
+        var(--bs-info, #0dcaf0),
+        var(--bs-success, #198754),
+        var(--bs-warning, #ffc107),
+        var(--bs-danger, #dc3545)
+      );
+    }
+    .app-footer-inner { font-size: .95rem; }
+  </style>
+
+  <!-- Global footer partial (non-fixed, uses flex layout instead) -->
+  <%- include('partials/footer') %>
+
+  <script>
+    // Helper for + / - buttons to step quantity within allowed min/max
+    function step(id, delta) {
+      var input = document.getElementById('q-input-' + id);
+      if (!input) return;
+
+      var min = Number(input.min || 1),
+          max = Number(input.max || 999),
+          val = Number(input.value || 1) + Number(delta || 0);
+
+      if (!Number.isFinite(val)) val = min;
+      if (val < min) val = min;
+      if (val > max) val = max;
+
+      input.value = val;
+    }
+  </script>
 </body>
 </html>

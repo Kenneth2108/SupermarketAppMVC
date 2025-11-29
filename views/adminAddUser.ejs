@@ -1,107 +1,142 @@
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <title>Admin - Add User</title>
+  <meta charset="UTF-8"> <!-- Page uses UTF-8 character encoding -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Make layout responsive on mobile -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- Bootstrap 5 CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap 5 JS bundle -->
+  <title>Admin - Add User</title> <!-- Title shown in browser tab -->
   <style>
-    body { background-color: #f7f7f9; }
-    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); }
-    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    body { background-color: #f7f7f9; } /* Light grey page background */
+    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); } /* Soft shadow under navbar */
+    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); } /* Card style for form container */
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">Supermarket App</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/inventory">Products</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/users">Users</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/admin/users/new">Add User</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <!-- Admin navbar, with "addUser" menu item marked active -->
+  <%- include('partials/adminNav', { active: 'addUser' }) %>
 
+  <!-- Main container for Add User page -->
   <div class="container my-4" style="max-width: 720px;">
     <div class="page-card p-4">
       <h2 class="mb-3">Add New User</h2>
 
+    <!-- Flash messages block (validation errors, etc.) -->
     <% if (messages && messages.length) { %>
       <div class="alert alert-warning">
         <% messages.forEach(function(m){ %>
-          <div><%= m %></div>
+          <div><%= m %></div> <!-- Show each message from server -->
         <% }) %>
       </div>
     <% } %>
 
+    <!-- Add User form (admin creates new user) -->
     <form action="/admin/users" method="POST" class="mt-3">
+      <!-- Username field -->
       <div class="mb-3">
         <label for="username" class="form-label">Username</label>
-        <input type="text" id="username" name="username" class="form-control" required value="<%= (formData && formData.username) || '' %>">
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-control"
+          required
+          value="<%= (formData && formData.username) || '' %>"><!-- Refill value on validation error -->
       </div>
+
+      <!-- Email field -->
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <input type="email" id="email" name="email" class="form-control" required value="<%= (formData && formData.email) || '' %>">
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-control"
+          required
+          value="<%= (formData && formData.email) || '' %>">
       </div>
+
+      <!-- Password field (plain, will be hashed on server) -->
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" name="password" class="form-control" required>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+          required>
       </div>
+
+      <!-- Address field -->
       <div class="mb-3">
         <label for="address" class="form-label">Address</label>
-        <input type="text" id="address" name="address" class="form-control" required value="<%= (formData && formData.address) || '' %>">
+        <input
+          type="text"
+          id="address"
+          name="address"
+          class="form-control"
+          required
+          value="<%= (formData && formData.address) || '' %>">
       </div>
+
+      <!-- Contact number field (exactly 8 digits, SG-style) -->
       <div class="mb-3">
         <label for="contact" class="form-label">Contact Number</label>
-        <input type="text" id="contact" name="contact" class="form-control" required value="<%= (formData && formData.contact) || '' %>">
+        <input
+          type="text"
+          id="contact"
+          name="contact"
+          class="form-control"
+          required
+          pattern="\d{8}"
+          maxlength="8"
+          value="<%= (formData && formData.contact) || '' %>">
+        <div class="form-text">Exactly 8 digits.</div>
       </div>
+
+      <!-- Role selector: choose User or Admin -->
       <div class="mb-3">
         <label for="role" class="form-label">Role</label>
         <select id="role" name="role" class="form-select" required>
-          <option value="user" <%= (formData && formData.role === 'user') ? 'selected' : '' %>>User</option>
-          <option value="admin" <%= (formData && formData.role === 'admin') ? 'selected' : '' %>>Admin</option>
+          <option
+            value="user"
+            <%= (formData && formData.role === 'user') ? 'selected' : '' %>>
+            User
+          </option>
+          <option
+            value="admin"
+            <%= (formData && formData.role === 'admin') ? 'selected' : '' %>>
+            Admin
+          </option>
         </select>
       </div>
+
+      <!-- Form action buttons -->
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Create User</button>
-        <a class="btn btn-secondary" href="/admin/users">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create User</button> <!-- Submit to create user -->
+        <a class="btn btn-secondary" href="/admin/users">Cancel</a> <!-- Go back to user list -->
       </div>
     </form>
     </div>
   </div>
+
+  <!-- Spacer so content doesn't sit right at top of footer -->
   <div style="height: 56px"></div>
-<style>
-  :root { --app-footer-height: 68px; }
-  html, body { height: 100%; }
-  body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 28px); }
-  .app-footer { background-color: #0b2131; color: #e6edf3; }
-  .app-footer a { color: #e6edf3; text-decoration: none; }
-  .app-footer a:hover { text-decoration: underline; }
-  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; }
-  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
-  .app-footer-inner { font-size: .95rem; }
-</style>
-<footer class="app-footer-fixed">
-  <div class="app-footer-gradient"></div>
-  <div class="app-footer py-3">
-    <div class="container text-center app-footer-inner">
-      <span>&copy; <script>document.write(new Date().getFullYear());</script> <strong>Supermarket App</strong>. All Rights Reserved.</span>
-    </div>
-  </div>
-</footer>
+
+  <!-- Footer layout & styling for fixed footer -->
+  <style>
+    :root { --app-footer-height: 68px; } /* Custom variable representing footer height */
+    html, body { height: 100%; } /* Full-height document */
+    body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 28px); } /* Prevent content from being hidden behind footer */
+
+    .app-footer { background-color: #0b2131; color: #e6edf3; } /* Footer colors */
+    .app-footer a { color: #e6edf3; text-decoration: none; } /* Footer links */
+    .app-footer a:hover { text-decoration: underline; }      /* Footer link hover state */
+
+    .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; } /* Stick footer at bottom */
+    .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); } /* Colorful top border for footer */
+    .app-footer-inner { font-size: .95rem; } /* Slightly smaller footer text */
+  </style>
+
+  <!-- Shared footer partial, with fixed position class -->
+  <%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
 </body>
 </html>

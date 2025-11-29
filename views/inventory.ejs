@@ -1,67 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <title>Supermarket App</title>
+  <meta charset="UTF-8"> <!-- NOTE: Character encoding -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- NOTE: Responsive layout on mobile -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- NOTE: Bootstrap CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- NOTE: Bootstrap JS bundle -->
+  <title>Supermarket App</title> <!-- NOTE: Browser tab title -->
   <style>
-    body { background-color: #f7f7f9; }
-    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); }
-    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
-    .page-header { border-bottom: 1px solid #eee; padding-bottom: .75rem; margin-bottom: 1rem; }
-    .table thead th { font-size: .85rem; letter-spacing: .02em; text-transform: uppercase; color: #6c757d; }
-    .table td, .table th { vertical-align: middle; }
-    .product-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; background: #fff; }
-    .search-input { max-width: 360px; }
+    body { background-color: #f7f7f9; } /* NOTE: Light grey background */
+    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); } /* NOTE: Soft shadow under navbar */
+    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); } /* NOTE: Card container */
+    .page-header { border-bottom: 1px solid #eee; padding-bottom: .75rem; margin-bottom: 1rem; } /* NOTE: Header separator */
+    .table thead th { font-size: .85rem; letter-spacing: .02em; text-transform: uppercase; color: #6c757d; } /* NOTE: Table header style */
+    .table td, .table th { vertical-align: middle; } /* NOTE: Align table cells in middle */
+    .product-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; background: #fff; } /* NOTE: Product thumbnail style */
+    .search-input { max-width: 360px; } /* NOTE: Limit search bar width */
   </style>
   <script>
-    function imgFallback(img){ img.onerror=null; img.src='/images/placeholder.png'; }
+    function imgFallback(img){ img.onerror=null; img.src='/images/placeholder.png'; } 
+    // NOTE: If product image fails, replace with placeholder
   </script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">Supermarket App</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="/addProduct">Add Product</a>
-            </li> 
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/users">Users</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/users/new">Add User</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/logout">Logout</a>
-            </li> 
-          </ul>
-        </div>
-      </div>
-    </nav>
+  <%- include('partials/adminNav', { active: 'inventory' }) %>
+  <!-- NOTE: Show admin navbar and highlight the 'inventory' menu -->
 
   <div class="container my-4">
     <div class="mb-2 text-muted">Welcome, <strong><%= user.username %></strong> (<%= user.role %>)</div>
+    <!-- NOTE: Show logged-in admin username and role -->
 
     <div class="page-card p-4">
       <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h2 class="m-0">Products</h2>
+        <h2 class="m-0">Products</h2> <!-- NOTE: Page title -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="btn-group btn-group-sm me-1" role="group" aria-label="View toggle">
             <button id="viewTableBtn" type="button" class="btn btn-outline-secondary active">Table</button>
+            <!-- NOTE: Button to show table view -->
             <button id="viewGridBtn" type="button" class="btn btn-outline-secondary">Grid</button>
+            <!-- NOTE: Button to show grid view -->
           </div>
           <input id="productSearch" class="form-control form-control-sm search-input" placeholder="Search products..." />
+          <!-- NOTE: Search bar for filtering products by name -->
           <a href="/addProduct" class="btn btn-primary btn-sm">Add Product</a>
+          <!-- NOTE: Link to add a new product -->
         </div>
       </div>
 
+      <!-- TABLE VIEW -->
       <div id="inventoryTableSection" class="table-responsive">
         <table class="table table-hover align-middle">
           <thead>
@@ -74,17 +59,27 @@
             </tr>
           </thead>
           <tbody id="productTableBody">
-            <% if (products && products.length) { %>
-              <% products.forEach(function(p){ %>
+            <% if (products && products.length) { %> <!-- NOTE: If there are products -->
+              <% products.forEach(function(p){ %> <!-- NOTE: Loop through each product -->
                 <tr>
                   <td>
-                    <a class="fw-semibold text-decoration-none" href="/product/<%= p.id %>"><%= p.productName %></a>
+                    <button type="button"
+                      class="btn btn-link p-0 fw-semibold text-decoration-none product-detail-btn"
+                      data-id="<%= p.id %>"
+                      data-name="<%= p.productName %>"
+                      data-qty="<%= p.quantity %>"
+                      data-price="<%= Number(p.price).toFixed(2) %>"
+                      data-image="<%= p.image %>">
+                      <%= p.productName %>
+                    </button>
+                    <!-- NOTE: Product name as button to open detail modal -->
                   </td>
                   <td class="text-center">
                     <img class="product-img" src="/images/<%= p.image %>" alt="<%= p.productName %>" onerror="imgFallback(this)">
+                    <!-- NOTE: Product thumbnail with fallback -->
                   </td>
                   <td class="text-center">
-                    <% const q = Number(p.quantity) || 0; %>
+                    <% const q = Number(p.quantity) || 0; %> <!-- NOTE: Ensure quantity is a number -->
                     <% if (q > 20) { %>
                       <span class="badge bg-success">In stock: <%= q %></span>
                     <% } else if (q > 0) { %>
@@ -92,17 +87,22 @@
                     <% } else { %>
                       <span class="badge bg-danger">Out</span>
                     <% } %>
+                    <!-- NOTE: Stock status badge based on quantity -->
                   </td>
                   <td class="text-end">$<%= Number(p.price).toFixed(2) %></td>
+                  <!-- NOTE: Price formatted to 2 decimal places -->
                   <td class="text-center">
                     <div class="btn-group btn-group-sm" role="group">
                       <a href="/updateProduct/<%= p.id %>" class="btn btn-outline-primary">Edit</a>
+                      <!-- NOTE: Edit link -->
                       <a href="/deleteProduct/<%= p.id %>" class="btn btn-outline-danger" onclick="return confirm('Delete <%= p.productName %>?')">Delete</a>
+                      <!-- NOTE: Delete with confirm popup -->
                     </div>
                   </td>
                 </tr>
               <% }) %>
             <% } else { %>
+              <!-- NOTE: If no products in database -->
               <tr>
                 <td colspan="5" class="text-center text-muted py-5">
                   No products found. <a href="/addProduct">Add your first product</a>.
@@ -113,17 +113,37 @@
         </table>
       </div>
 
+      <!-- GRID VIEW -->
       <div id="inventoryGridSection" class="d-none">
         <% if (products && products.length) { %>
           <div class="row g-3" id="productGrid">
             <% products.forEach(function(p){ const q = Number(p.quantity) || 0; %>
               <div class="col-12 col-sm-6 col-md-4 col-lg-3 inventory-card">
                 <div class="card h-100 shadow-sm">
-                  <a href="/product/<%= p.id %>" class="text-decoration-none text-reset">
+                  <button type="button"
+                    class="btn p-0 border-0 bg-transparent product-detail-btn w-100"
+                    data-id="<%= p.id %>"
+                    data-name="<%= p.productName %>"
+                    data-qty="<%= p.quantity %>"
+                    data-price="<%= Number(p.price).toFixed(2) %>"
+                    data-image="<%= p.image %>">
                     <img src="/images/<%= p.image %>" class="card-img-top" alt="<%= p.productName %>" onerror="imgFallback(this)" style="aspect-ratio:1/1;object-fit:cover;">
-                  </a>
+                  </button>
+                  <!-- NOTE: Entire image is clickable for product detail modal -->
+
                   <div class="card-body">
-                    <h6 class="card-title mb-1 text-truncate" title="<%= p.productName %>"><%= p.productName %></h6>
+                    <button type="button"
+                      class="btn btn-link p-0 text-start card-title mb-1 text-truncate product-detail-btn"
+                      title="<%= p.productName %>"
+                      data-id="<%= p.id %>"
+                      data-name="<%= p.productName %>"
+                      data-qty="<%= p.quantity %>"
+                      data-price="<%= Number(p.price).toFixed(2) %>"
+                      data-image="<%= p.image %>">
+                      <%= p.productName %>
+                    </button>
+                    <!-- NOTE: Product name below image, also opens modal -->
+
                     <div class="d-flex justify-content-between align-items-center">
                       <span class="fw-bold">$<%= Number(p.price).toFixed(2) %></span>
                       <% if (q > 20) { %>
@@ -133,8 +153,10 @@
                       <% } else { %>
                         <span class="badge bg-danger">Out</span>
                       <% } %>
+                      <!-- NOTE: Stock badge for grid view -->
                     </div>
                   </div>
+
                   <div class="card-footer bg-white border-0 pt-0 d-flex justify-content-between">
                     <a href="/updateProduct/<%= p.id %>" class="btn btn-outline-primary btn-sm">Edit</a>
                     <a href="/deleteProduct/<%= p.id %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete <%= p.productName %>?')">Delete</a>
@@ -144,6 +166,7 @@
             <% }) %>
           </div>
         <% } else { %>
+          <!-- NOTE: No products in grid view -->
           <div class="text-center text-muted py-5">
             No products found. <a href="/addProduct">Add your first product</a>.
           </div>
@@ -152,8 +175,35 @@
     </div>
   </div>
 
+  <!-- PRODUCT DETAIL MODAL -->
+  <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productDetailModalLabel">Product Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            <img id="detailProductImage" src="" class="img-thumbnail" style="max-width: 200px;" onerror="imgFallback(this)">
+            <!-- NOTE: Product image in modal -->
+          </div>
+          <p class="mb-1"><strong>Name:</strong> <span id="detailProductName"></span></p>
+          <p class="mb-1"><strong>Quantity:</strong> <span id="detailProductQuantity"></span></p>
+          <p class="mb-1"><strong>Price:</strong> $<span id="detailProductPrice"></span></p>
+        </div>
+        <div class="modal-footer">
+          <a id="detailEditLink" href="#" class="btn btn-primary">Edit Product</a>
+          <!-- NOTE: Goes to updateProduct/:id -->
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Simple client-side table filter
+    // Simple client-side table & grid filter + view toggle
+
     const input = document.getElementById('productSearch');
     const tbody = document.getElementById('productTableBody');
     const tableSection = document.getElementById('inventoryTableSection');
@@ -162,61 +212,86 @@
     const viewGridBtn = document.getElementById('viewGridBtn');
 
     function setView(mode){
-      const tableActive = mode === 'table';
-      tableSection.classList.toggle('d-none', !tableActive);
-      gridSection.classList.toggle('d-none', tableActive);
-      viewTableBtn.classList.toggle('active', tableActive);
+      const tableActive = mode === 'table'; // NOTE: true when table view selected
+      tableSection.classList.toggle('d-none', !tableActive); // NOTE: hide/show table section
+      gridSection.classList.toggle('d-none', tableActive);   // NOTE: hide/show grid section
+      viewTableBtn.classList.toggle('active', tableActive);  // NOTE: button active state
       viewGridBtn.classList.toggle('active', !tableActive);
     }
 
     if (viewTableBtn && viewGridBtn) {
-      viewTableBtn.addEventListener('click', () => setView('table'));
-      viewGridBtn.addEventListener('click', () => setView('grid'));
+      viewTableBtn.addEventListener('click', () => setView('table')); // NOTE: switch to table
+      viewGridBtn.addEventListener('click', () => setView('grid'));   // NOTE: switch to grid
     }
 
     function filterInventory(query){
-      const q = query.trim().toLowerCase();
+      const q = query.trim().toLowerCase(); // NOTE: normalize search text
+
       if (tbody) {
         for (const row of tbody.rows) {
-          if (row.cells.length && row.cells[0].colSpan === 5) continue; // empty state row
+          if (row.cells.length && row.cells[0].colSpan === 5) continue; // NOTE: Skip "no products" row
           const nameCell = row.cells[0];
           const match = nameCell && nameCell.innerText.toLowerCase().includes(q);
-          row.style.display = match ? '' : 'none';
+          row.style.display = match ? '' : 'none'; // NOTE: hide/show row based on search
         }
       }
+
       if (gridSection) {
         const cards = gridSection.querySelectorAll('.inventory-card');
         cards.forEach(card => {
           const title = card.querySelector('.card-title');
           const match = title && title.innerText.toLowerCase().includes(q);
-          card.style.display = match ? '' : 'none';
+          card.style.display = match ? '' : 'none'; // NOTE: hide/show card in grid
         });
       }
     }
 
     if (input) {
-      input.addEventListener('input', function(){ filterInventory(this.value); });
+      input.addEventListener('input', function(){ filterInventory(this.value); }); // NOTE: live search as user types
     }
+
+    const detailModalEl = document.getElementById('productDetailModal');
+    const detailModal = detailModalEl ? new bootstrap.Modal(detailModalEl) : null; // NOTE: Bootstrap modal instance
+
+    function showProductDetailFromBtn(btn){
+      if (!detailModal || !btn.dataset) return;
+      const { id, name, qty, price, image } = btn.dataset; // NOTE: read data-* attributes
+
+      document.getElementById('detailProductName').innerText = name || '';
+      document.getElementById('detailProductQuantity').innerText = qty || '0';
+      document.getElementById('detailProductPrice').innerText = Number(price || 0).toFixed(2);
+
+      const img = document.getElementById('detailProductImage');
+      img.src = image ? `/images/${image}` : '/images/placeholder.png';
+      img.alt = name || '';
+
+      document.getElementById('detailEditLink').href = `/updateProduct/${id}`; // NOTE: set edit link
+      detailModal.show(); // NOTE: open modal
+    }
+
+    document.querySelectorAll('.product-detail-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        showProductDetailFromBtn(this); // NOTE: bind click to open modal with this product
+      });
+    });
   </script>
-  <div style="height: 56px"></div>
+
+  <div style="height: 56px"></div> <!-- NOTE: Spacer so footer doesn't overlap bottom content -->
+
 <style>
-  :root { --app-footer-height: 68px; }
-  html, body { height: auto !important; }
-  body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 140px); }
-  .app-footer { background-color: #0b2131; color: #e6edf3; }
+  :root { --app-footer-height: 68px; } /* NOTE: Footer height variable */
+  html, body { height: auto !important; } /* NOTE: Override default height */
+  body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 140px); } /* NOTE: Extra padding for fixed footer */
+  .app-footer { background-color: #0b2131; color: #e6edf3; } /* NOTE: Footer background + text */
   .app-footer a { color: #e6edf3; text-decoration: none; }
   .app-footer a:hover { text-decoration: underline; }
-  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; }
-  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
-  .app-footer-inner { font-size: .95rem; }
+  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; } /* NOTE: Fix footer at bottom */
+  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); } /* NOTE: Color bar */
+  .app-footer-inner { font-size: .95rem; } /* NOTE: Footer text size */
 </style>
-<footer class="app-footer-fixed">
-  <div class="app-footer-gradient"></div>
-  <div class="app-footer py-3">
-    <div class="container text-center app-footer-inner">
-      <span>&copy; <script>document.write(new Date().getFullYear());</script> <strong>Supermarket App</strong>. All Rights Reserved.</span>
-    </div>
-  </div>
-</footer>
+
+<%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
+<!-- NOTE: Render footer partial with 'app-footer-fixed' CSS class -->
+
 </body>
 </html>

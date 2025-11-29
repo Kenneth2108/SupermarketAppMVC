@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"> <!-- Use UTF-8 character encoding -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive layout on mobile -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- Bootstrap 5 CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap 5 JS bundle -->
+  <title>Edit User</title>
+  <style>
+    body { background-color: #f7f7f9; } /* Light grey background */
+    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); } /* Card style for main box */
+  </style>
+</head>
+<body>
+  <!-- Include admin navbar, mark "users" as the active tab -->
+  <%- include('partials/adminNav', { active: 'users' }) %>
+
+  <div class="container my-4">
+    <div class="page-card p-4">
+      <!-- Header row: title + back-to-list button -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h2 class="m-0">Edit User</h2>
+        <a href="/admin/users" class="btn btn-outline-secondary btn-sm">Back to list</a>
+      </div>
+
+      <!-- Show any validation or server messages (e.g. errors) -->
+      <% if (messages && messages.length) { %>
+        <div class="alert alert-warning">
+          <% messages.forEach(function(message){ %>
+            <div><%= message %></div> <!-- Print each message line -->
+          <% }) %>
+        </div>
+      <% } %>
+
+      <!-- If no user is found, show error -->
+      <% if (!targetUser) { %>
+        <div class="alert alert-danger">User not found.</div>
+      <% } else { %>
+        <!-- Use formData (when form submitted with errors) or fallback to targetUser from DB -->
+        <% const persisted = formData || targetUser; %>
+
+        <!-- Edit user form: POST to /admin/users/:id/edit -->
+        <form action="/admin/users/<%= targetUser.id %>/edit" method="POST" class="mt-3">
+          <!-- Username field -->
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control"
+              required
+              value="<%= persisted.username %>">
+          </div>
+
+          <!-- Email field -->
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              required
+              value="<%= persisted.email %>">
+          </div>
+
+          <!-- Contact field -->
+          <div class="mb-3">
+            <label for="contact" class="form-label">Contact</label>
+            <input
+              type="text"
+              id="contact"
+              name="contact"
+              class="form-control"
+              required
+              value="<%= persisted.contact %>">
+          </div>
+
+          <!-- Address textarea -->
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <textarea
+              id="address"
+              name="address"
+              class="form-control"
+              rows="3"
+              required><%= persisted.address %></textarea>
+          </div>
+
+          <!-- Action buttons: Save or Cancel -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/admin/users" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      <% } %>
+    </div>
+  </div>
+
+<!-- Footer layout styles and fixed positioning -->
+<style>
+  :root { --app-footer-height: 68px; } /* Footer height variable */
+  html, body { height: auto !important; } /* Allow page height to adapt to content */
+  body {
+    min-height: 100vh;
+    padding-bottom: calc(var(--app-footer-height) + 140px); /* Prevent footer overlapping form */
+  }
+  .app-footer { background-color: #0b2131; color: #e6edf3; } /* Footer background + text colors */
+  .app-footer a { color: #e6edf3; text-decoration: none; }  /* Footer links */
+  .app-footer a:hover { text-decoration: underline; }       /* Footer link hover effect */
+  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; } /* Stick footer to bottom of viewport */
+  .app-footer-gradient {
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      var(--bs-primary, #0d6efd),
+      var(--bs-info, #0dcaf0),
+      var(--bs-success, #198754),
+      var(--bs-warning, #ffc107),
+      var(--bs-danger, #dc3545)
+    );
+  } /* Thin gradient bar above footer */
+  .app-footer-inner { font-size: .95rem; } /* Slightly smaller footer text */
+</style>
+
+<!-- Include shared footer partial with fixed positioning class -->
+<%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
+</body>
+</html>
