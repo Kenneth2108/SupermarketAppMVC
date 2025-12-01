@@ -8,45 +8,124 @@
   <title>Admin - Users</title>
 
   <style>
-    body { background-color: #f7f7f9; } /* Light grey background */
-    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); } /* Subtle navbar shadow */
-    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); } /* Card container */
-    .page-header { border-bottom: 1px solid #eee; padding-bottom: .75rem; margin-bottom: 1rem; } /* Header divider */
-    .table thead th { font-size: .85rem; letter-spacing: .02em; text-transform: uppercase; color: #6c757d; } /* Table header style */
-    .search-input { max-width: 360px; } /* Limit search input width */
-
-    /* Unified button style to keep action buttons consistent */
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #f6fbff 0%, #edf3ff 50%, #f5f7fb 100%);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding-bottom: calc(var(--app-footer-height, 68px) + 120px);
+    }
+    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); }
+    .users-wrapper { max-width: 1280px; }
+    .page-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, .12), 0 3px 10px rgba(15, 23, 42, .08);
+      padding: 2.5rem;
+    }
+    .hero-intro {
+      background: linear-gradient(135deg, #eef4ff 0%, #fef9ff 50%, #ecf3ff 100%);
+      border-radius: 22px;
+      padding: 1.5rem 2rem;
+      border: 1px solid rgba(99, 123, 255, .15);
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-intro::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle at top right, rgba(255, 143, 223, .35), transparent 70%);
+      top: -80px;
+      right: -60px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hero-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9b67ff, #6a52ff);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 25px rgba(107, 74, 255, .35);
+    }
+    .hero-icon svg {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+    }
+    .hero-text h2 { margin-bottom: .4rem; font-weight: 700; color: #101828; }
+    .hero-text p { margin: 0; color: #475467; }
+    .hero-badge {
+      background: rgba(99, 123, 255, .12);
+      color: #4154ff;
+      padding: .25rem .85rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .page-header {
+      border-bottom: 1px solid rgba(148, 163, 184, .3);
+      padding-bottom: .75rem;
+      margin-bottom: 1.5rem;
+    }
+    .search-input { max-width: 360px; }
+    .btn-pill {
+      border-radius: 999px;
+      padding: .55rem 1.6rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .table-modern thead th {
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #64748b;
+      border-bottom-width: 1px;
+      border-color: rgba(148, 163, 184, .4);
+    }
+    .table-modern tbody tr {
+      border-bottom: 1px solid rgba(226, 232, 240, .8);
+      transition: background-color .2s ease;
+    }
+    .table-modern tbody tr:hover { background-color: rgba(99, 123, 255, .04); }
+    .role-select { min-width: 160px; border-radius: 12px; }
     .app-action-btn {
       min-width: 90px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-weight: 500;
+      font-weight: 600;
     }
-
-    /* Custom edit button style */
     .app-edit-btn {
-      background-color: #6c757d;
-      border-color: #6c757d;
+      background-color: #475467;
+      border-color: #475467;
       color: #fff;
     }
     .app-edit-btn:hover {
-      background-color: #5c636a;
-      border-color: #565e64;
+      background-color: #344054;
+      border-color: #293445;
       color: #fff;
     }
-
-    /* Footer & layout spacing */
-    :root { --app-footer-height: 68px; } /* Footer height variable */
-    html, body { height: auto !important; } /* Let height grow with content */
-    body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 140px); } /* Prevent footer overlap */
-
-    .app-footer { background-color: #0b2131; color: #e6edf3; } /* Footer background & text */
-    .app-footer a { color: #e6edf3; text-decoration: none; }  /* Footer links */
-    .app-footer a:hover { text-decoration: underline; }       /* Footer link hover */
-    .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; } /* Fixed footer */
-    .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); } /* Colorful strip above footer */
-    .app-footer-inner { font-size: .95rem; } /* Slightly smaller footer text */
+    :root { --app-footer-height: 68px; }
+    html, body { height: auto !important; }
+    .app-footer { background-color: #0b2131; color: #e6edf3; }
+    .app-footer a { color: #e6edf3; text-decoration: none; }
+    .app-footer a:hover { text-decoration: underline; }
+    .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; }
+    .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
+    .app-footer-inner { font-size: .95rem; }
   </style>
 
 </head>
@@ -54,17 +133,29 @@
   <!-- Admin navbar, set "users" tab as active -->
   <%- include('partials/adminNav', { active: 'users' }) %>
 
-  <div class="container my-4">
-    <div class="page-card p-4">
+  <div class="container my-4 users-wrapper">
+    <div class="page-card">
+      <div class="hero-intro">
+        <div class="hero-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 12a3 3 0 1 0-6 0 3 3 0 0 0 6 0Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M21 21v-1.5a4.5 4.5 0 0 0-4.5-4.5h-9A4.5 4.5 0 0 0 3 19.5V21" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M19 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <div class="hero-text">
+          <h2>Manage Users</h2>
+          <p>Review accounts, adjust roles, and keep your supermarket team organized.</p>
+        </div>
+        <span class="hero-badge">Team directory</span>
+      </div>
 
-      <!-- Page header: title + search + Add User button -->
       <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h2 class="m-0">Manage Users</h2>
-        <div class="d-flex align-items-center gap-2">
-          <!-- Live search input (JS below will filter table rows) -->
+        <h3 class="m-0 fs-5 text-muted">Directory overview</h3>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
           <input id="userSearch" class="form-control form-control-sm search-input" placeholder="Search by name or email..." />
-          <!-- Button to go to Add User form -->
-          <a class="btn btn-success btn-sm" href="/admin/users/new">Add User</a>
+          <a class="btn btn-success btn-sm btn-pill" href="/admin/users/new">Add User</a>
         </div>
       </div>
 
@@ -79,7 +170,7 @@
 
       <!-- Users table -->
       <div class="table-responsive">
-        <table class="table table-striped align-middle">
+        <table class="table align-middle table-modern">
           <thead>
             <tr>
               <th>ID</th>        <!-- Row index (not DB id) -->
@@ -123,7 +214,7 @@
                   <% } else { %>
                     <!-- Role update form (only for non-admin, non-self) -->
                     <form action="/admin/users/<%= u.id %>/role" method="POST" class="d-flex gap-2">
-                      <select name="role" class="form-select form-select-sm" style="max-width:130px">
+                      <select name="role" class="form-select form-select-sm role-select">
                         <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>user</option>
                         <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>admin</option>
                       </select>
