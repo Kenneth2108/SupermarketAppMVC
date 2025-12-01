@@ -207,13 +207,20 @@ module.exports = {
         return res.redirect(user.role === 'admin' ? '/inventory' : '/shopping');
       }
 
-      // If 2FA IS enabled → store user in a "pending" session and go verify page
+      // ----------------------------------------------------------
+      // If 2FA IS enabled → store user in a "pending" session
+      // and mark that 2FA is currently required for this login
+      // ----------------------------------------------------------
       req.session.pending2fa = {
         id: user.id,
         email: user.email,
         username: user.username,
         role: user.role
       };
+
+      // 🔒 mark that user is in 2FA step (used mainly for clarity / future checks)
+      req.session.twoFactorPending = true;
+
       console.log('[LOGIN] Password OK, 2FA required for', user.email);
       return res.redirect('/verify2fa');
     });
@@ -229,6 +236,13 @@ module.exports = {
       // nothing pending, user probably navigated here manually -> back to login
       return res.redirect('/login');
     }
+
+    // 🔒 Prevent this page from being cached so Back button
+    // won't show a stale 2FA screen after login is done
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     const messages = pop(req.session.messages);
     // verify2fa.ejs expects "email" + "messages"
     return view(res, 'verify2fa', { messages, email: pending.email });
@@ -277,7 +291,10 @@ module.exports = {
         return res.redirect('/verify2fa');
       }
 
+      // ----------------------------------------------------------
       // 2FA success → consider user fully logged in
+      // and clear any "pending" 2FA state so page can't be reused
+      // ----------------------------------------------------------
       req.session.user = {
         id: user.id,
         username: user.username,
@@ -285,8 +302,12 @@ module.exports = {
         role: user.role,
         twofa_enabled: user.twofa_enabled
       };
+
       // Remove pending2fa because login is completed
       delete req.session.pending2fa;
+
+      // 🔒 Mark 2FA as finished so future checks know it's done
+      req.session.twoFactorPending = false;
 
       console.log('[LOGIN] 2FA success:', user.username, `(${user.role})`);
       return res.redirect(user.role === 'admin' ? '/inventory' : '/shopping');

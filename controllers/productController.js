@@ -146,8 +146,22 @@ module.exports = {
       const messages = popMessages(req);
       // Pop one-time session messages (e.g. "Added to cart").
 
-      return view(res, 'shopping', { products: rows, messages });
-      // Render shopping.ejs with all products + messages
+      const searchTerm = (req.query.search || '').trim();
+      let filteredRows = rows;
+
+      if (searchTerm) {
+        const lowered = searchTerm.toLowerCase();
+        filteredRows = rows.filter((product = {}) =>
+          String(product.productName || '').toLowerCase().includes(lowered)
+        );
+      }
+
+      return view(res, 'shopping', {
+        products: filteredRows,
+        messages,
+        searchTerm
+      });
+      // Render shopping.ejs with filtered products + messages
     });
   }
 };

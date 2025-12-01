@@ -7,62 +7,194 @@
   <title>Verify 2FA</title> <!-- NOTE: Browser tab title -->
 </head>
 <body>
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark"> <!-- NOTE: Simple dark navbar -->
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark shadow-sm">
     <div class="container">
-      <a class="navbar-brand" href="/">Supermarket App</a> <!-- NOTE: Brand link back to home -->
+      <a class="navbar-brand fw-semibold" href="/">Supermarket App</a>
     </div>
   </nav>
 
-  <main class="container py-5"> <!-- NOTE: Main content area with vertical padding -->
-    <div class="row justify-content-center">
-      <div class="col-12 col-sm-10 col-md-6 col-lg-4">
-        <div class="card shadow-sm border-0 rounded-4"> <!-- NOTE: Centered card for 2FA form -->
-          <div class="card-body p-4">
-            <h1 class="h4 mb-3 fw-bold text-center">Two-Factor Verification</h1> <!-- NOTE: Title -->
-            <p class="text-secondary text-center mb-4">
-              Enter the 6-digit code from your authenticator app.
-            </p> <!-- NOTE: Short instruction -->
+  <main class="verify-wrapper">
+    <div class="verify-card position-relative">
+      <div class="verify-glow"></div>
+      <div class="verify-icon" aria-hidden="true">&#128274;</div>
+      <span class="verify-badge">Security check</span>
+      <h1 class="verify-title">Two-Factor Verification</h1>
+      <p class="verify-subtitle">
+        Enter the 6-digit code from your authenticator app to continue.
+      </p>
 
-            <% if (messages && messages.length) { %>
-              <!-- NOTE: Show error messages (e.g. invalid code) -->
-              <div class="alert alert-danger">
-                <% messages.forEach(function(m){ %>
-                  <div><%= m %></div>
-                <% }) %>
-              </div>
-            <% } %>
-
-            <form action="/twofactor" method="POST" novalidate>
-              <!-- NOTE: Form posts to /twofactor for server-side verification -->
-
-              <div class="mb-3">
-                <label for="token" class="form-label">Verification Code</label>
-                <input
-                  type="tel"
-                  id="token"
-                  name="token"
-                  class="form-control form-control-lg text-center"
-                  maxlength="6"
-                  pattern="[0-9]{6}"
-                  inputmode="numeric"
-                  required>
-                <!-- NOTE: 6-digit numeric input, centered, required -->
-
-                <div class="form-text">
-                  Sent to <%= email %>
-                </div>
-                <!-- NOTE: Shows which email this 2FA is associated with -->
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-lg w-100">
-                Verify
-              </button>
-              <!-- NOTE: Submit button to verify 2FA token -->
-            </form>
-          </div>
+      <% if (messages && messages.length) { %>
+        <div class="alert alert-danger text-start w-100">
+          <% messages.forEach(function(m){ %>
+            <div><%= m %></div>
+          <% }) %>
         </div>
-      </div>
+      <% } %>
+
+      <form action="/twofactor" method="POST" class="w-100" novalidate>
+        <label for="token" class="form-label fw-semibold">Verification Code</label>
+        <input
+          type="tel"
+          id="token"
+          name="token"
+          class="form-control otp-input mb-2"
+          maxlength="6"
+          pattern="[0-9]{6}"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          required>
+        <div class="form-text text-center mb-3">
+          Sent to <%= email %>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-pill w-100">
+          <span aria-hidden="true">&#128272;</span>
+          Verify
+        </button>
+      </form>
+
+      <p class="verify-note">
+        Tip: Open your authenticator app and look for the 6-digit code labeled “Supermarket App”.
+      </p>
     </div>
   </main>
+
+  <style>
+    :root { --app-footer-height: 68px; }
+
+    html, body { height: auto !important; }
+
+    body {
+      min-height: 100vh;
+      padding-bottom: calc(var(--app-footer-height) + 60px);
+      background: linear-gradient(180deg, #f6fbff 0%, #edf3ff 50%, #f5f7fb 100%);
+    }
+
+    .verify-wrapper {
+      min-height: calc(100vh - 120px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .verify-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 30px;
+      padding: 2.5rem 2.25rem;
+      box-shadow: 0 30px 60px rgba(15, 23, 42, .15), 0 8px 20px rgba(15, 23, 42, .08);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .verify-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(13,110,253,.14), transparent 60%);
+      pointer-events: none;
+    }
+
+    .verify-icon {
+      width: 76px;
+      height: 76px;
+      border-radius: 23px;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #fff;
+      background: linear-gradient(135deg, #0d6efd, #54a9ff);
+      box-shadow: 0 18px 35px rgba(13,110,253,.35);
+      position: relative;
+      z-index: 1;
+    }
+
+    .verify-badge {
+      display: inline-block;
+      padding: .25rem .85rem;
+      border-radius: 999px;
+      background: rgba(13,110,253,.12);
+      color: #0d6efd;
+      font-size: .8rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: .5rem;
+      position: relative;
+    }
+
+    .verify-title {
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: .4rem;
+      position: relative;
+    }
+
+    .verify-subtitle {
+      color: #475467;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .otp-input {
+      font-size: 1.6rem;
+      letter-spacing: .6rem;
+      text-align: center;
+      font-weight: 600;
+      border-radius: 16px;
+      padding: .75rem 1rem;
+      border: 1.5px solid rgba(15, 23, 42, .12);
+      transition: border .2s ease, box-shadow .2s ease;
+    }
+
+    .otp-input:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 .25rem rgba(13,110,253,.15);
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+      padding: .7rem 1.6rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      box-shadow: 0 10px 20px rgba(13,110,253,.25);
+    }
+
+    .verify-note {
+      font-size: .9rem;
+      color: #64748b;
+      margin-top: 1.25rem;
+    }
+
+    @media (max-width: 480px) {
+      .otp-input { letter-spacing: .4rem; font-size: 1.4rem; }
+      .verify-card { padding: 2rem 1.5rem; }
+    }
+
+    .app-footer { background-color: #0b2131; color: #e6edf3; }
+    .app-footer a { color: #e6edf3; text-decoration: none; }
+    .app-footer a:hover { text-decoration: underline; }
+    .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; }
+    .app-footer-gradient {
+      height: 4px;
+      background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0),
+        var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545));
+    }
+    .app-footer-inner { font-size: .95rem; }
+  </style>
+
+  <script>
+    // Completely disable going "back" to this page in history
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () {
+      history.go(1);
+    };
+  </script>
+
+  <%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
 </body>
 </html>

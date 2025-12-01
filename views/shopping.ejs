@@ -7,40 +7,83 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- NOTE: Bootstrap JS bundle -->
   <title>Supermarket App</title> <!-- NOTE: Browser tab title -->
 </head>
-<body>
+<body class="bg-body">
   <%- include('partials/userNav', { active: 'shop' }) %>
   <!-- NOTE: Show user navbar and highlight the 'shop' link -->
 
-  <main>
-    <div class="container">
-      <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
+  <main class="shop-page py-5">
+    <div class="shop-container mx-auto p-4 p-md-5">
+      <% const userInitial = (user.username || '').charAt(0).toUpperCase(); %>
+      <div class="welcome-card position-relative overflow-hidden">
+        <div class="welcome-hero">
+          <span class="welcome-badge">Welcome back</span>
+          <div class="welcome-main">
+            <div class="welcome-avatar"><%= userInitial %></div>
+            <div>
+              <h3 class="welcome-name mb-1"><%= user.username %></h3>
+              <p class="welcome-subtext mb-0">Here are today&rsquo;s freshest picks.</p>
+            </div>
+          </div>
+        </div>
+        <p class="role-pill text-uppercase ms-auto align-self-start mt-2 mt-md-0"><%= user.role %></p>
+      </div>
       <!-- NOTE: Display logged-in username and role -->
-      <br>
 
       <% if (messages && messages.length) { %>
         <!-- NOTE: Show any flash messages (e.g. stock warnings, info) -->
-        <div class="alert alert-warning" role="alert">
+        <div class="alert alert-warning shadow-sm" role="alert">
           <% messages.forEach(function(message) { %>
             <div><%= message %></div>
           <% }); %>
         </div>
-        <br>
       <% } %>
 
-      <div class="text-center">
-        <h2>Products from Supermarket</h2>
+      <div class="filter-bar">
+        <form class="filter-form" method="GET" action="/shopping">
+          <div class="filter-field">
+            <span class="filter-icon" aria-hidden="true">🔎</span>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search product name..."
+              value="<%= typeof searchTerm === 'string' ? searchTerm : '' %>"
+              aria-label="Search product name">
+          </div>
+          <button type="submit" class="btn btn-primary filter-btn">Search</button>
+          <% if (searchTerm) { %>
+            <a href="/shopping" class="btn btn-link filter-reset">Clear</a>
+          <% } %>
+        </form>
+        <div class="filter-meta">
+          <span><%= products.length %> result<%= products.length === 1 ? '' : 's' %></span>
+          <% if (searchTerm) { %>
+            <span class="filter-tag">for "<%= searchTerm %>"</span>
+          <% } %>
+        </div>
       </div>
-      <br>
 
-      <table class="table table-hover small text-center">
+      <div class="text-center mb-4">
+        <p class="eyebrow-text mb-1">Fresh picks updated daily</p>
+        <h2 class="section-title">Products from Supermarket</h2>
+      </div>
+
+      <% if (!products.length) { %>
+        <div class="empty-state text-center py-5">
+          <p class="empty-eyebrow text-uppercase mb-2">No products found</p>
+          <h4 class="empty-title mb-3">We couldn't find anything that matches your search.</h4>
+          <p class="empty-hint mb-4">Try adjusting your search term or reset the filter to view all items.</p>
+          <a href="/shopping" class="btn btn-outline-primary">Reset Filter</a>
+        </div>
+      <% } else { %>
+      <table class="table table-hover align-middle product-table w-100">
         <thead>
           <tr>
-            <th width="100">Product Name</th>
-            <th width="100">Product Image</th>
-            <th width="50">Quantity</th>
-            <th width="50">Price</th>
-            <th width="50">Quantity to Buy</th>
-            <th width="120">Actions</th>
+            <th class="col-product-name text-uppercase">Product Name</th>
+            <th class="col-image text-uppercase text-start ps-4">Product Image</th>
+            <th class="text-uppercase">Quantity</th>
+            <th class="text-uppercase">Price</th>
+            <th class="text-uppercase">Quantity to Buy</th>
+            <th class="text-uppercase text-center col-actions">Actions</th>
           </tr>
           <!-- NOTE: Basic product listing table header -->
         </thead>
@@ -56,8 +99,11 @@
                 <!-- NOTE: Product name links to product details page -->
               </td>
 
-              <td>
-                <img src="images/<%= products[i].image %>" width="20%">
+              <td class="product-image-cell">
+                <img
+                  src="images/<%= products[i].image %>"
+                  alt="<%= products[i].productName %>"
+                  class="product-thumb">
                 <!-- NOTE: Product image thumbnail (path relative to current page) -->
               </td>
 
@@ -72,7 +118,7 @@
                 <!-- NOTE: Max quantity user can purchase = stock -->
 
                 <select
-                  class="form-control"
+                  class="form-select quantity-select"
                   onchange="document.getElementById('quantity-<%= products[i].id %>').value = this.value"
                   <%= maxPurchaseQty === 0 ? 'disabled' : '' %>>
                   <!-- NOTE: Dropdown to choose quantity; disabled if out of stock -->
@@ -89,11 +135,11 @@
                 <% } %>
               </td>
 
-              <td>
+              <td class="col-actions text-center">
                 <form
                   action="/add-to-cart/<%= products[i].id %>"
                   method="POST"
-                  class="d-flex gap-2 justify-content-center">
+                  class="d-flex gap-2 justify-content-center flex-wrap flex-md-nowrap">
                   <!-- NOTE: Form to add selected product to cart -->
 
                   <input
@@ -109,7 +155,7 @@
                     type="submit"
                     name="redirect"
                     value="stay"
-                    class="btn btn-outline-primary mt-3">
+                    class="btn btn-outline-primary mt-3 action-btn">
                     Add to Cart
                   </button>
                   <!-- NOTE: Add item to cart and stay on shopping page -->
@@ -118,7 +164,7 @@
                     type="submit"
                     name="redirect"
                     value="cart"
-                    class="btn btn-primary mt-3">
+                    class="btn btn-primary mt-3 action-btn">
                     Buy Now
                   </button>
                   <!-- NOTE: Add item to cart then redirect to /cart -->
@@ -129,14 +175,350 @@
           <% } %>
         </tbody>
       </table>
+      <% } %>
     </div>
   </main>
 
+  <a href="/cart" class="cart-fab" aria-label="View Cart">
+    <span class="cart-fab-icon">🛒</span>
+    <span class="cart-fab-text">Cart</span>
+  </a>
+
   <style>
+    :root { color-scheme: light; }
     html { scroll-behavior: smooth; } /* NOTE: Smooth scrolling for anchor jumps */
-    body { min-height: 100vh; display: flex; flex-direction: column; } /* NOTE: Flex layout to push footer down */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #f6fbff 0%, #edf3ff 50%, #f5f7fb 100%);
+    } /* NOTE: Flex layout to push footer down */
     main { flex: 1 0 auto; } /* NOTE: Main grows to fill space */
     footer { flex-shrink: 0; margin-top: auto; } /* NOTE: Footer sticks to bottom */
+
+    .shop-page { color: #101828; }
+
+    .shop-container {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow:
+        0 20px 45px rgba(15, 23, 42, 0.12),
+        0 3px 10px rgba(15, 23, 42, 0.08);
+      max-width: 1400px;
+      width: min(95vw, 1400px);
+      margin: 0 auto;
+    }
+
+    .welcome-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      background: linear-gradient(135deg, #eef4ff 0%, #fef9ff 50%, #ecf3ff 100%);
+      border-radius: 22px;
+      padding: 1.5rem 2rem;
+      border: 1px solid rgba(99, 123, 255, .15);
+      margin-bottom: 2rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+    }
+
+    .welcome-card::before,
+    .welcome-card::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      z-index: 0;
+      opacity: .35;
+    }
+
+    .welcome-card::before {
+      background: radial-gradient(circle at top left, rgba(99, 123, 255, .35), transparent 70%);
+      top: -80px;
+      left: -60px;
+    }
+
+    .welcome-card::after {
+      background: radial-gradient(circle at bottom right, rgba(255, 143, 223, .35), transparent 70%);
+      bottom: -90px;
+      right: -60px;
+    }
+
+    .welcome-hero {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: rgba(255, 255, 255, .6);
+      border-radius: 999px;
+      padding: .3rem .9rem;
+      font-size: .85rem;
+      color: #475467;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .welcome-main {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .welcome-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d6efd, #54a9ff);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(13, 110, 253, .3);
+    }
+
+    .welcome-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #101828;
+    }
+
+    .welcome-subtext { color: #475467; font-size: .95rem; }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background: #f8faff;
+      border-radius: 18px;
+      border: 1px solid rgba(13, 110, 253, .12);
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .75rem;
+      flex: 1 1 320px;
+    }
+
+    .filter-field {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      border-radius: 999px;
+      padding: .4rem 1rem .4rem 1.2rem;
+      border: 1px solid rgba(13, 110, 253, .15);
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-field input {
+      border: 0;
+      outline: none;
+      flex: 1;
+      font-size: .95rem;
+      background: transparent;
+    }
+
+    .filter-icon { font-size: 1rem; }
+
+    .filter-btn {
+      border-radius: 999px;
+      padding-inline: 1.5rem;
+      font-weight: 600;
+    }
+
+    .filter-reset {
+      text-decoration: none;
+      color: #475467;
+      font-weight: 500;
+    }
+
+    .filter-reset:hover {
+      text-decoration: underline;
+    }
+
+    .filter-meta {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .9rem;
+      color: #475467;
+    }
+
+    .filter-tag {
+      background: rgba(13, 110, 253, .1);
+      color: #0d6efd;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      font-size: .8rem;
+    }
+
+    .empty-state {
+      background: #fff;
+      border: 1px dashed rgba(13, 110, 253, .3);
+      border-radius: 18px;
+    }
+
+    .empty-eyebrow {
+      letter-spacing: .2em;
+      font-size: .75rem;
+      color: #98a2b3;
+    }
+
+    .empty-title { color: #101828; font-weight: 600; }
+
+    .empty-hint { color: #475467; }
+
+    .role-pill {
+      display: inline-block;
+      padding: .15rem .8rem;
+      background: #e8f0ff;
+      color: #2667ff;
+      border-radius: 999px;
+      font-size: .75rem;
+      letter-spacing: .08em;
+    }
+
+    .eyebrow-text {
+      font-size: .85rem;
+      letter-spacing: .12em;
+      color: #98a2b3;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #101828;
+    }
+
+    .product-table {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #e4e7ec;
+    }
+
+    .product-table .col-product-name { width: 24%; }
+    .product-table .col-image { width: 18%; }
+    .product-table .col-actions { width: 20%; text-align: center; }
+
+    .product-table thead {
+      background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+      color: #fff;
+      text-transform: uppercase;
+      font-size: .82rem;
+      letter-spacing: .08em;
+    }
+
+    .product-table tbody tr {
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .product-table tbody tr:hover {
+      transform: translateX(4px);
+      background: #f4f9ff;
+      box-shadow: inset 3px 0 0 #0d6efd;
+    }
+
+    .product-table td, .product-table th {
+      padding: 1.1rem 1rem;
+    }
+
+    .product-image-cell {
+      text-align: left;
+      padding-left: 2rem;
+    }
+
+    .product-thumb {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      border-radius: 18px;
+      border: 1px solid #e4e7ec;
+      background: #f8fafc;
+      padding: .5rem;
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .6);
+    }
+
+    .quantity-select {
+      border-radius: 999px;
+      padding-inline: 1rem;
+      border-color: #cfd4dc;
+      box-shadow: none;
+    }
+
+    .quantity-select:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+    }
+
+    .action-btn {
+      min-width: 120px;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 18px rgba(13, 110, 253, .18);
+    }
+
+    @media (max-width: 768px) {
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-form { width: 100%; }
+      .filter-meta { width: 100%; justify-content: space-between; }
+    }
+
+    .cart-fab {
+      position: fixed;
+      right: 2rem;
+      bottom: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .75rem 1.5rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #0d6efd, #5aa9ff);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 18px 30px rgba(13, 110, 253, .35);
+      transition: transform .15s ease, box-shadow .15s ease;
+      z-index: 999;
+    }
+
+    .cart-fab:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 24px 40px rgba(13, 110, 253, .4);
+    }
+
+    .cart-fab-icon {
+      font-size: 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .cart-fab {
+        right: 1rem;
+        bottom: 1rem;
+      }
+    }
 
     .app-footer { background-color: #0b2131; color: #e6edf3; } /* NOTE: Footer background + text color */
     .app-footer a { color: #e6edf3; text-decoration: none; }
@@ -157,6 +539,25 @@
 
     .app-footer-inner { font-size: .95rem; } /* NOTE: Footer text size */
   </style>
+
+  <script>
+    (function () {
+      const FORMS_SELECTOR = 'form[action^="/add-to-cart"]';
+      const SCROLL_KEY = 'shoppingScrollPos';
+
+      document.querySelectorAll(FORMS_SELECTOR).forEach((form) => {
+        form.addEventListener('submit', () => {
+          sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+        });
+      });
+
+      const savedY = Number(sessionStorage.getItem(SCROLL_KEY));
+      if (!Number.isNaN(savedY)) {
+        window.scrollTo({ top: savedY, behavior: 'instant' });
+        sessionStorage.removeItem(SCROLL_KEY);
+      }
+    })();
+  </script>
 
   <%- include('partials/footer') %>
   <!-- NOTE: Shared footer partial -->

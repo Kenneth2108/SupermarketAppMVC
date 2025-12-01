@@ -6,61 +6,450 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- NOTE: Bootstrap CSS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> <!-- NOTE: Bootstrap JS bundle -->
   <title>Supermarket App</title> <!-- NOTE: Browser tab title -->
+
   <style>
-    body { background-color: #f7f7f9; } /* NOTE: Light grey background */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #f6fbff 0%, #edf3ff 50%, #f5f7fb 100%);
+    } /* NOTE: Light gradient background matching shopping */
+
     .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); } /* NOTE: Soft shadow under navbar */
-    .page-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.06); } /* NOTE: Card container */
-    .page-header { border-bottom: 1px solid #eee; padding-bottom: .75rem; margin-bottom: 1rem; } /* NOTE: Header separator */
-    .table thead th { font-size: .85rem; letter-spacing: .02em; text-transform: uppercase; color: #6c757d; } /* NOTE: Table header style */
+
+    .page-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 20px 45px rgba(15,23,42,.12), 0 3px 10px rgba(15,23,42,.08);
+    } /* NOTE: Card container */
+
+    .page-header {
+      border-bottom: 1px solid #eee;
+      padding-bottom: .75rem;
+      margin-bottom: 1rem;
+    } /* NOTE: Header separator */
+
+    .table thead th {
+      font-size: .85rem;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: #6c757d;
+    } /* NOTE: Table header style */
+
     .table td, .table th { vertical-align: middle; } /* NOTE: Align table cells in middle */
-    .product-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; background: #fff; } /* NOTE: Product thumbnail style */
-    .search-input { max-width: 360px; } /* NOTE: Limit search bar width */
+
+    .product-img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      background: #fff;
+    } /* NOTE: Product thumbnail style */
+
+    .inventory-table {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #e4e7ec;
+    }
+
+    .inventory-table thead {
+      background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+      color: #fff;
+      font-size: .78rem;
+      letter-spacing: .08em;
+    }
+
+    .inventory-table tbody tr {
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .inventory-table tbody tr:hover {
+      transform: translateX(4px);
+      background: #f4f9ff;
+      box-shadow: inset 3px 0 0 #0d6efd;
+    }
+
+    .inventory-table td, .inventory-table th {
+      padding: 1.1rem 1rem;
+    }
+
+    .inventory-th-name { width: 28%; }
+    .inventory-th-image { width: 18%; }
+    .inventory-th-stock { width: 18%; }
+    .inventory-th-price { width: 14%; }
+    .inventory-th-actions { width: 22%; }
+
+    .inventory-image-cell { text-align: left; }
+
+    .inventory-thumb {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 18px;
+      border: 1px solid #e4e7ec;
+      background: #f8fafc;
+      padding: .5rem;
+    }
+
+    .welcome-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      background: linear-gradient(135deg, #eef4ff 0%, #fef9ff 50%, #ecf3ff 100%);
+      border-radius: 22px;
+      padding: 1.5rem 2rem;
+      border: 1px solid rgba(99, 123, 255, .15);
+      margin-bottom: 1.5rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-card::before,
+    .welcome-card::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      opacity: .35;
+    }
+
+    .welcome-card::before {
+      background: radial-gradient(circle at top left, rgba(99, 123, 255, .35), transparent 70%);
+      top: -80px;
+      left: -60px;
+    }
+
+    .welcome-card::after {
+      background: radial-gradient(circle at bottom right, rgba(255, 143, 223, .35), transparent 70%);
+      bottom: -90px;
+      right: -60px;
+    }
+
+    .welcome-hero {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: rgba(255, 255, 255, .6);
+      border-radius: 999px;
+      padding: .3rem .9rem;
+      font-size: .85rem;
+      color: #475467;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .welcome-main {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .welcome-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d6efd, #54a9ff);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(13, 110, 253, .3);
+    }
+
+    .welcome-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #101828;
+      margin-bottom: .2rem;
+    }
+
+    .welcome-subtext {
+      color: #475467;
+      font-size: .95rem;
+      margin: 0;
+    }
+
+    .role-pill {
+      display: inline-block;
+      padding: .2rem .8rem;
+      background: rgba(14, 165, 233, .15);
+      color: #0f74c0;
+      border-radius: 999px;
+      font-size: .75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+      align-self: flex-start;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background: #f8faff;
+      border-radius: 18px;
+      border: 1px solid rgba(13, 110, 253, .12);
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .75rem;
+      flex: 1 1 320px;
+    }
+
+    .filter-field {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      border-radius: 999px;
+      padding: .4rem 1rem .4rem 1.2rem;
+      border: 1px solid rgba(13, 110, 253, .15);
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-field input {
+      border: 0;
+      outline: none;
+      flex: 1;
+      font-size: .95rem;
+      background: transparent;
+    }
+
+    .filter-icon {
+      font-size: 1rem;
+    }
+
+    .filter-btn {
+      border-radius: 999px;
+      padding-inline: 1.5rem;
+      font-weight: 600;
+    }
+
+    .filter-reset {
+      text-decoration: none;
+      color: #475467;
+      font-weight: 500;
+    }
+
+    .filter-reset:hover { text-decoration: underline; }
+
+    .filter-meta {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .9rem;
+      color: #475467;
+    }
+
+    .filter-tag {
+      background: rgba(13, 110, 253, .1);
+      color: #0d6efd;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      font-size: .8rem;
+    }
+
+    @media (max-width: 768px) {
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-form { width: 100%; }
+      .filter-meta { width: 100%; justify-content: space-between; }
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      align-items: center;
+      background: #eef4ff;
+      border-radius: 999px;
+      padding: .3rem;
+      gap: .35rem;
+    }
+
+    .view-toggle-btn {
+      border: none;
+      background: transparent;
+      color: #475467;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: .4rem 1.2rem;
+      transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+
+    .view-toggle-btn.active {
+      background: linear-gradient(135deg, #0d6efd, #558dff);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(13, 110, 253, .25);
+    }
+
+    .action-btn {
+      border-radius: 999px;
+      font-weight: 600;
+      min-width: 120px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 18px rgba(13, 110, 253, .15);
+    }
+
+    .action-icon { font-size: 1rem; }
+
+    .inventory-card .card {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+    }
+
+    .inventory-card .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 30px rgba(15, 23, 42, .18);
+    }
+
+    .inventory-price-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .25rem .8rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, .05);
+      font-weight: 600;
+      color: #101828;
+    }
+
+    .inventory-ribbon {
+      position: absolute;
+      top: 1rem;
+      right: 0;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      font-size: .8rem;
+      padding: .35rem .9rem;
+      border-radius: 999px 0 0 999px;
+      box-shadow: 0 7px 15px rgba(34, 197, 94, .25);
+    }
+
+    .inventory-ribbon.low {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      box-shadow: 0 7px 15px rgba(234, 88, 12, .25);
+    }
+
+    .inventory-ribbon.out {
+      background: linear-gradient(135deg, #f43f5e, #be123c);
+      box-shadow: 0 7px 15px rgba(190, 18, 60, .25);
+    }
   </style>
+
   <script>
-    function imgFallback(img){ img.onerror=null; img.src='/images/placeholder.png'; } 
-    // NOTE: If product image fails, replace with placeholder
+    function imgFallback(img){
+      img.onerror=null;
+      img.src='/images/placeholder.png';
+    } // NOTE: If product image fails, replace with placeholder
   </script>
 </head>
+
 <body>
+
   <%- include('partials/adminNav', { active: 'inventory' }) %>
-  <!-- NOTE: Show admin navbar and highlight the 'inventory' menu -->
 
   <div class="container my-4">
-    <div class="mb-2 text-muted">Welcome, <strong><%= user.username %></strong> (<%= user.role %>)</div>
-    <!-- NOTE: Show logged-in admin username and role -->
+
+    <% const adminInitial = (user.username || '').charAt(0).toUpperCase(); %>
 
     <div class="page-card p-4">
-      <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h2 class="m-0">Products</h2> <!-- NOTE: Page title -->
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <div class="btn-group btn-group-sm me-1" role="group" aria-label="View toggle">
-            <button id="viewTableBtn" type="button" class="btn btn-outline-secondary active">Table</button>
-            <!-- NOTE: Button to show table view -->
-            <button id="viewGridBtn" type="button" class="btn btn-outline-secondary">Grid</button>
-            <!-- NOTE: Button to show grid view -->
+
+      <div class="welcome-card mb-4">
+        <div class="welcome-hero">
+          <span class="welcome-badge">Welcome back</span>
+          <div class="welcome-main">
+            <div class="welcome-avatar"><%= adminInitial %></div>
+            <div>
+              <div class="welcome-name mb-0"><%= user.username %></div>
+              <p class="welcome-subtext mb-0">Inventory overview at a glance.</p>
+            </div>
           </div>
-          <input id="productSearch" class="form-control form-control-sm search-input" placeholder="Search products..." />
-          <!-- NOTE: Search bar for filtering products by name -->
+        </div>
+
+        <p class="role-pill"><%= user.role %></p>
+      </div>
+
+      <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2 class="m-0">Products</h2>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="view-toggle" role="group" aria-label="View toggle">
+            <button id="viewTableBtn" type="button" class="view-toggle-btn active">Table</button>
+            <button id="viewGridBtn" type="button" class="view-toggle-btn">Grid</button>
+          </div>
+
           <a href="/addProduct" class="btn btn-primary btn-sm">Add Product</a>
-          <!-- NOTE: Link to add a new product -->
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <form class="filter-form" onsubmit="return handleInventorySearch(event);">
+          <div class="filter-field">
+            <span class="filter-icon" aria-hidden="true">🔎</span>
+            <input id="productSearch" type="text" placeholder="Search product name..." aria-label="Search product name" autocomplete="off">
+          </div>
+
+          <button type="submit" class="btn btn-primary filter-btn">Search</button>
+
+          <a id="inventoryResetButton" href="javascript:void(0)" class="btn btn-link filter-reset d-none" onclick="clearInventorySearch()">Clear</a>
+        </form>
+
+        <div class="filter-meta">
+          <span id="inventoryFilterResults"><%= products ? products.length : 0 %> result<%= (products && products.length) === 1 ? '' : 's' %></span>
+          <span id="inventoryFilterTag" class="filter-tag d-none"></span>
         </div>
       </div>
 
       <!-- TABLE VIEW -->
       <div id="inventoryTableSection" class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle inventory-table w-100">
           <thead>
             <tr>
-              <th>Product</th>
-              <th class="text-center">Image</th>
-              <th class="text-center" style="width:140px">Stock</th>
-              <th class="text-end" style="width:120px">Price</th>
-              <th class="text-center" style="width:160px">Actions</th>
+              <th class="text-uppercase inventory-th-name">Product</th>
+              <th class="text-uppercase text-start inventory-th-image">Image</th>
+              <th class="text-uppercase text-center inventory-th-stock">Stock</th>
+              <th class="text-uppercase text-end inventory-th-price">Price</th>
+              <th class="text-uppercase text-center inventory-th-actions">Actions</th>
             </tr>
           </thead>
+
           <tbody id="productTableBody">
-            <% if (products && products.length) { %> <!-- NOTE: If there are products -->
-              <% products.forEach(function(p){ %> <!-- NOTE: Loop through each product -->
+
+            <% if (products && products.length) { %>
+              <% products.forEach(function(p){ %>
+
                 <tr>
                   <td>
                     <button type="button"
@@ -70,16 +459,21 @@
                       data-qty="<%= p.quantity %>"
                       data-price="<%= Number(p.price).toFixed(2) %>"
                       data-image="<%= p.image %>">
+
                       <%= p.productName %>
                     </button>
-                    <!-- NOTE: Product name as button to open detail modal -->
                   </td>
-                  <td class="text-center">
-                    <img class="product-img" src="/images/<%= p.image %>" alt="<%= p.productName %>" onerror="imgFallback(this)">
-                    <!-- NOTE: Product thumbnail with fallback -->
+
+                  <td class="inventory-image-cell">
+                    <img class="inventory-thumb"
+                         src="/images/<%= p.image %>"
+                         alt="<%= p.productName %>"
+                         onerror="imgFallback(this)">
                   </td>
+
                   <td class="text-center">
-                    <% const q = Number(p.quantity) || 0; %> <!-- NOTE: Ensure quantity is a number -->
+                    <% const q = Number(p.quantity) || 0; %>
+
                     <% if (q > 20) { %>
                       <span class="badge bg-success">In stock: <%= q %></span>
                     <% } else if (q > 0) { %>
@@ -87,28 +481,39 @@
                     <% } else { %>
                       <span class="badge bg-danger">Out</span>
                     <% } %>
-                    <!-- NOTE: Stock status badge based on quantity -->
                   </td>
+
                   <td class="text-end">$<%= Number(p.price).toFixed(2) %></td>
-                  <!-- NOTE: Price formatted to 2 decimal places -->
+
                   <td class="text-center">
-                    <div class="btn-group btn-group-sm" role="group">
-                      <a href="/updateProduct/<%= p.id %>" class="btn btn-outline-primary">Edit</a>
-                      <!-- NOTE: Edit link -->
-                      <a href="/deleteProduct/<%= p.id %>" class="btn btn-outline-danger" onclick="return confirm('Delete <%= p.productName %>?')">Delete</a>
-                      <!-- NOTE: Delete with confirm popup -->
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                      <a href="/updateProduct/<%= p.id %>" class="btn action-btn btn-outline-primary">
+                        <span class="action-icon" aria-hidden="true">✏️</span>
+                        Edit
+                      </a>
+
+                      <a href="/deleteProduct/<%= p.id %>"
+                         class="btn action-btn btn-outline-danger"
+                         onclick="return confirm('Delete <%= p.productName %>?')">
+                        <span class="action-icon" aria-hidden="true">🗑️</span>
+                        Delete
+                      </a>
                     </div>
                   </td>
                 </tr>
+
               <% }) %>
             <% } else { %>
-              <!-- NOTE: If no products in database -->
+
               <tr>
                 <td colspan="5" class="text-center text-muted py-5">
-                  No products found. <a href="/addProduct">Add your first product</a>.
+                  No products found.
+                  <a href="/addProduct">Add your first product</a>.
                 </td>
               </tr>
+
             <% } %>
+
           </tbody>
         </table>
       </div>
@@ -116,20 +521,38 @@
       <!-- GRID VIEW -->
       <div id="inventoryGridSection" class="d-none">
         <% if (products && products.length) { %>
+
           <div class="row g-3" id="productGrid">
+
             <% products.forEach(function(p){ const q = Number(p.quantity) || 0; %>
+
               <div class="col-12 col-sm-6 col-md-4 col-lg-3 inventory-card">
                 <div class="card h-100 shadow-sm">
-                  <button type="button"
-                    class="btn p-0 border-0 bg-transparent product-detail-btn w-100"
-                    data-id="<%= p.id %>"
-                    data-name="<%= p.productName %>"
-                    data-qty="<%= p.quantity %>"
-                    data-price="<%= Number(p.price).toFixed(2) %>"
-                    data-image="<%= p.image %>">
-                    <img src="/images/<%= p.image %>" class="card-img-top" alt="<%= p.productName %>" onerror="imgFallback(this)" style="aspect-ratio:1/1;object-fit:cover;">
-                  </button>
-                  <!-- NOTE: Entire image is clickable for product detail modal -->
+
+                  <div class="position-relative">
+                    <button type="button"
+                      class="btn p-0 border-0 bg-transparent product-detail-btn w-100"
+                      data-id="<%= p.id %>"
+                      data-name="<%= p.productName %>"
+                      data-qty="<%= p.quantity %>"
+                      data-price="<%= Number(p.price).toFixed(2) %>"
+                      data-image="<%= p.image %>">
+
+                      <img src="/images/<%= p.image %>"
+                           class="card-img-top"
+                           alt="<%= p.productName %>"
+                           onerror="imgFallback(this)"
+                           style="aspect-ratio:1/1;object-fit:cover;">
+                    </button>
+
+                    <% if (q > 20) { %>
+                      <span class="inventory-ribbon">In stock: <%= q %></span>
+                    <% } else if (q > 0) { %>
+                      <span class="inventory-ribbon low">Low: <%= q %></span>
+                    <% } else { %>
+                      <span class="inventory-ribbon out">Out</span>
+                    <% } %>
+                  </div>
 
                   <div class="card-body">
                     <button type="button"
@@ -140,99 +563,162 @@
                       data-qty="<%= p.quantity %>"
                       data-price="<%= Number(p.price).toFixed(2) %>"
                       data-image="<%= p.image %>">
+
                       <%= p.productName %>
                     </button>
-                    <!-- NOTE: Product name below image, also opens modal -->
 
                     <div class="d-flex justify-content-between align-items-center">
-                      <span class="fw-bold">$<%= Number(p.price).toFixed(2) %></span>
-                      <% if (q > 20) { %>
-                        <span class="badge bg-success">In stock</span>
-                      <% } else if (q > 0) { %>
-                        <span class="badge bg-warning text-dark">Low</span>
-                      <% } else { %>
-                        <span class="badge bg-danger">Out</span>
-                      <% } %>
-                      <!-- NOTE: Stock badge for grid view -->
+                      <span class="inventory-price-pill">
+                        <span aria-hidden="true">💲</span>
+                        <%= Number(p.price).toFixed(2) %>
+                      </span>
                     </div>
                   </div>
 
-                  <div class="card-footer bg-white border-0 pt-0 d-flex justify-content-between">
-                    <a href="/updateProduct/<%= p.id %>" class="btn btn-outline-primary btn-sm">Edit</a>
-                    <a href="/deleteProduct/<%= p.id %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete <%= p.productName %>?')">Delete</a>
+                  <div class="card-footer bg-white border-0 pt-0 d-flex justify-content-between flex-wrap gap-2">
+                    <a href="/updateProduct/<%= p.id %>" class="btn action-btn btn-outline-primary flex-fill text-center">
+                      <span class="action-icon" aria-hidden="true">✏️</span>
+                      Edit
+                    </a>
+
+                    <a href="/deleteProduct/<%= p.id %>"
+                       class="btn action-btn btn-outline-danger flex-fill text-center"
+                       onclick="return confirm('Delete <%= p.productName %>?')">
+                      <span class="action-icon" aria-hidden="true">🗑️</span>
+                      Delete
+                    </a>
                   </div>
+
                 </div>
               </div>
+
             <% }) %>
+
           </div>
+
         <% } else { %>
-          <!-- NOTE: No products in grid view -->
+
           <div class="text-center text-muted py-5">
-            No products found. <a href="/addProduct">Add your first product</a>.
+            No products found.
+            <a href="/addProduct">Add your first product</a>.
           </div>
+
         <% } %>
       </div>
+
     </div>
   </div>
 
   <!-- PRODUCT DETAIL MODAL -->
   <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
+
       <div class="modal-content">
+
         <div class="modal-header">
           <h5 class="modal-title" id="productDetailModalLabel">Product Details</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+
         <div class="modal-body">
           <div class="text-center mb-3">
             <img id="detailProductImage" src="" class="img-thumbnail" style="max-width: 200px;" onerror="imgFallback(this)">
-            <!-- NOTE: Product image in modal -->
           </div>
+
           <p class="mb-1"><strong>Name:</strong> <span id="detailProductName"></span></p>
           <p class="mb-1"><strong>Quantity:</strong> <span id="detailProductQuantity"></span></p>
           <p class="mb-1"><strong>Price:</strong> $<span id="detailProductPrice"></span></p>
         </div>
+
         <div class="modal-footer">
           <a id="detailEditLink" href="#" class="btn btn-primary">Edit Product</a>
-          <!-- NOTE: Goes to updateProduct/:id -->
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
+
       </div>
     </div>
   </div>
 
   <script>
     // Simple client-side table & grid filter + view toggle
-
     const input = document.getElementById('productSearch');
     const tbody = document.getElementById('productTableBody');
     const tableSection = document.getElementById('inventoryTableSection');
     const gridSection = document.getElementById('inventoryGridSection');
     const viewTableBtn = document.getElementById('viewTableBtn');
     const viewGridBtn = document.getElementById('viewGridBtn');
+    const resultsMeta = document.getElementById('inventoryFilterResults');
+    const filterTagEl = document.getElementById('inventoryFilterTag');
+    const resetBtn = document.getElementById('inventoryResetButton');
 
-    function setView(mode){
-      const tableActive = mode === 'table'; // NOTE: true when table view selected
-      tableSection.classList.toggle('d-none', !tableActive); // NOTE: hide/show table section
-      gridSection.classList.toggle('d-none', tableActive);   // NOTE: hide/show grid section
-      viewTableBtn.classList.toggle('active', tableActive);  // NOTE: button active state
+    const totalProducts = <%= products ? products.length : 0 %>;
+    const VIEW_MODE_KEY = 'inventoryViewMode';
+
+    function setView(mode, skipPersist){
+      const normalizedMode = mode === 'grid' ? 'grid' : 'table';
+      const tableActive = normalizedMode === 'table';
+      tableSection.classList.toggle('d-none', !tableActive);
+      gridSection.classList.toggle('d-none', tableActive);
+      viewTableBtn.classList.toggle('active', tableActive);
       viewGridBtn.classList.toggle('active', !tableActive);
+      if (!skipPersist) {
+        try {
+          localStorage.setItem(VIEW_MODE_KEY, normalizedMode);
+        } catch (err) {
+          console.warn('Unable to persist view mode', err);
+        }
+      }
     }
 
+    (function restoreViewPreference(){
+      let savedMode = 'table';
+      try {
+        const stored = localStorage.getItem(VIEW_MODE_KEY);
+        if (stored === 'grid') savedMode = 'grid';
+      } catch (err) {
+        console.warn('Unable to read view mode', err);
+      }
+      setView(savedMode, true);
+    })();
+
     if (viewTableBtn && viewGridBtn) {
-      viewTableBtn.addEventListener('click', () => setView('table')); // NOTE: switch to table
-      viewGridBtn.addEventListener('click', () => setView('grid'));   // NOTE: switch to grid
+      viewTableBtn.addEventListener('click', () => setView('table'));
+      viewGridBtn.addEventListener('click', () => setView('grid'));
+    }
+
+    function updateFilterMeta(count, queryText) {
+      if (resultsMeta) {
+        resultsMeta.textContent = `${count} result${count === 1 ? '' : 's'}`;
+      }
+
+      if (filterTagEl) {
+        if (queryText) {
+          filterTagEl.textContent = `for "${queryText}"`;
+          filterTagEl.classList.remove('d-none');
+        } else {
+          filterTagEl.textContent = '';
+          filterTagEl.classList.add('d-none');
+        }
+      }
+
+      if (resetBtn) {
+        resetBtn.classList.toggle('d-none', !queryText);
+      }
     }
 
     function filterInventory(query){
-      const q = query.trim().toLowerCase(); // NOTE: normalize search text
+      const trimmed = (query || '').trim();
+      const q = trimmed.toLowerCase();
+
+      let matches = 0;
 
       if (tbody) {
         for (const row of tbody.rows) {
-          if (row.cells.length && row.cells[0].colSpan === 5) continue; // NOTE: Skip "no products" row
+          if (row.cells.length && row.cells[0].colSpan === 5) continue;
           const nameCell = row.cells[0];
           const match = nameCell && nameCell.innerText.toLowerCase().includes(q);
-          row.style.display = match ? '' : 'none'; // NOTE: hide/show row based on search
+          row.style.display = match ? '' : 'none';
+          if (match) matches++;
         }
       }
 
@@ -241,21 +727,38 @@
         cards.forEach(card => {
           const title = card.querySelector('.card-title');
           const match = title && title.innerText.toLowerCase().includes(q);
-          card.style.display = match ? '' : 'none'; // NOTE: hide/show card in grid
+          card.style.display = match ? '' : 'none';
         });
       }
+
+      updateFilterMeta(matches || (q ? 0 : totalProducts), trimmed);
     }
 
-    if (input) {
-      input.addEventListener('input', function(){ filterInventory(this.value); }); // NOTE: live search as user types
-    }
+    window.triggerInventorySearch = function(){
+      if (input) filterInventory(input.value);
+    };
+
+    window.handleInventorySearch = function(evt){
+      if (evt) evt.preventDefault();
+      triggerInventorySearch();
+      return false;
+    };
+
+    window.clearInventorySearch = function(){
+      if (!input) return;
+      input.value = '';
+      filterInventory('');
+    };
+
+    updateFilterMeta(totalProducts, '');
 
     const detailModalEl = document.getElementById('productDetailModal');
-    const detailModal = detailModalEl ? new bootstrap.Modal(detailModalEl) : null; // NOTE: Bootstrap modal instance
+    const detailModal = detailModalEl ? new bootstrap.Modal(detailModalEl) : null;
 
     function showProductDetailFromBtn(btn){
       if (!detailModal || !btn.dataset) return;
-      const { id, name, qty, price, image } = btn.dataset; // NOTE: read data-* attributes
+
+      const { id, name, qty, price, image } = btn.dataset;
 
       document.getElementById('detailProductName').innerText = name || '';
       document.getElementById('detailProductQuantity').innerText = qty || '0';
@@ -265,33 +768,59 @@
       img.src = image ? `/images/${image}` : '/images/placeholder.png';
       img.alt = name || '';
 
-      document.getElementById('detailEditLink').href = `/updateProduct/${id}`; // NOTE: set edit link
-      detailModal.show(); // NOTE: open modal
+      document.getElementById('detailEditLink').href = `/updateProduct/${id}`;
+
+      detailModal.show();
     }
 
     document.querySelectorAll('.product-detail-btn').forEach(btn => {
       btn.addEventListener('click', function(){
-        showProductDetailFromBtn(this); // NOTE: bind click to open modal with this product
+        showProductDetailFromBtn(this);
       });
     });
   </script>
 
-  <div style="height: 56px"></div> <!-- NOTE: Spacer so footer doesn't overlap bottom content -->
+  <div style="height: 56px"></div>
 
-<style>
-  :root { --app-footer-height: 68px; } /* NOTE: Footer height variable */
-  html, body { height: auto !important; } /* NOTE: Override default height */
-  body { min-height: 100vh; padding-bottom: calc(var(--app-footer-height) + 140px); } /* NOTE: Extra padding for fixed footer */
-  .app-footer { background-color: #0b2131; color: #e6edf3; } /* NOTE: Footer background + text */
-  .app-footer a { color: #e6edf3; text-decoration: none; }
-  .app-footer a:hover { text-decoration: underline; }
-  .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; } /* NOTE: Fix footer at bottom */
-  .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); } /* NOTE: Color bar */
-  .app-footer-inner { font-size: .95rem; } /* NOTE: Footer text size */
-</style>
+  <style>
+    :root { --app-footer-height: 68px; }
 
-<%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
-<!-- NOTE: Render footer partial with 'app-footer-fixed' CSS class -->
+    html, body { height: auto !important; }
+
+    body {
+      min-height: 100vh;
+      padding-bottom: calc(var(--app-footer-height) + 140px);
+    }
+
+    .app-footer {
+      background-color: #0b2131;
+      color: #e6edf3;
+    }
+
+    .app-footer a {
+      color: #e6edf3;
+      text-decoration: none;
+    }
+
+    .app-footer a:hover { text-decoration: underline; }
+
+    .app-footer-fixed {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1030;
+    }
+
+    .app-footer-gradient {
+      height: 4px;
+      background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545));
+    }
+
+    .app-footer-inner { font-size: .95rem; }
+  </style>
+
+  <%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
 
 </body>
 </html>

@@ -9,118 +9,167 @@
 </head>
 <body>
 
-  <%- include('partials/adminNav', { active: 'inventory' }) %> 
-  <!-- NOTE: Loads admin navigation bar and highlights "inventory" -->
+  <%- include('partials/adminNav', { active: 'inventory' }) %>
 
-  <!-- Main content -->
-  <main class="main-content py-4"> <!-- NOTE: Main page spacing -->
-    <div class="container">
-      <h2 class="text-center mb-4">Update Product</h2> <!-- NOTE: Page title -->
-      
-      <% if (product) { %> <!-- NOTE: If product exists, show form -->
-        <form action="/updateProduct/<%= product.id %>" method="POST" enctype="multipart/form-data" class="mx-auto" style="max-width: 500px;">
-          <!-- NOTE: Form posts to /updateProduct/:id -->
-          <!-- NOTE: enctype multipart/form-data required for file upload -->
+  <div class="container my-4 form-wrapper" style="max-width: 760px;">
+    <div class="page-card">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h2 class="m-0">Update Product</h2>
+        <a href="/inventory" class="btn btn-outline-secondary btn-sm">Back to inventory</a>
+      </div>
 
+      <div class="hero-intro">
+        <div class="hero-icon" aria-hidden="true">&#128230;</div>
+        <div class="hero-text">
+          <h2>Refresh Stock Item</h2>
+          <p>Edit product information, adjust quantity, or replace image.</p>
+        </div>
+        <span class="hero-badge">Inventory control</span>
+      </div>
+
+      <% if (product) { %>
+        <form action="/updateProduct/<%= product.id %>" method="POST" enctype="multipart/form-data" class="mt-3">
           <div class="mb-3">
             <label for="name" class="form-label">Product Name</label>
             <input type="text" class="form-control" id="name" name="name" value="<%= product.productName %>" required>
-            <!-- NOTE: Prefilled product name -->
           </div>
 
           <div class="mb-3">
             <label for="quantity" class="form-label">Quantity</label>
             <input type="number" class="form-control" id="quantity" name="quantity" min="0" step="1" value="<%= product.quantity %>" required>
-            <!-- NOTE: Prefilled quantity -->
           </div>
 
           <div class="mb-3">
             <label for="price" class="form-label">Price</label>
             <input type="number" class="form-control" id="price" name="price" min="0" step="0.01" value="<%= product.price %>" required>
-            <!-- NOTE: Prefilled price -->
           </div>
 
           <div class="mb-3">
             <label class="form-label">Current Image</label>
             <input type="text" class="form-control" name="currentImage" value="<%= product.image %>" readonly>
-            <!-- NOTE: Shows image filename (readonly) -->
-            <img src="/images/<%= product.image %>" class="img-thumbnail mt-2" style="width: 150px;">
-            <!-- NOTE: Preview of existing image -->
+            <div class="current-image-preview mt-3">
+              <img src="/images/<%= product.image %>" alt="Current image for <%= product.productName %>" onerror="this.src='/images/placeholder.png'">
+            </div>
           </div>
 
           <div class="mb-4">
             <label for="image" class="form-label">Upload New Image</label>
             <input class="form-control" type="file" id="image" name="image" accept="image/*">
-            <!-- NOTE: Optional: upload replacement image -->
           </div>
 
-          <div class="d-grid gap-2 mb-4">
-            <button type="submit" class="btn btn-primary">Update Product</button> <!-- NOTE: Submit update -->
-            <a href="/inventory" class="btn btn-secondary">Back to Inventory</a> <!-- NOTE: Return to inventory list -->
+          <div class="d-flex justify-content-end gap-2">
+            <a href="/inventory" class="btn btn-outline-secondary btn-pill">
+              <span aria-hidden="true">&#10550;</span>
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-pill">
+              <span aria-hidden="true">&#128190;</span>
+              Update Product
+            </button>
           </div>
-
         </form>
-
-      <% } else { %> <!-- NOTE: If no product found -->
-        <p class="text-center mb-4">No product found.</p>
+      <% } else { %>
+        <div class="alert alert-warning mb-0">No product found.</div>
       <% } %>
-
     </div>
-  </main>
+  </div>
 
-<style>
-  html { scroll-behavior: smooth; } /* NOTE: Smooth scrolling effect */
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #f6fbff 0%, #edf3ff 50%, #f5f7fb 100%);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding-bottom: calc(var(--app-footer-height, 68px) + 40px);
+    }
 
-  /* Ensure full height layout */
-  body { 
-    min-height: 100vh;           /* NOTE: Makes the body fill the screen height */
-    display: flex; 
-    flex-direction: column;      /* NOTE: Allows footer to stay bottom */
-  }
+    .navbar { box-shadow: 0 2px 6px rgba(0,0,0,.05); }
 
-  /* This FIXES the footer covering content */
-  main {
-    flex: 1 0 auto;               /* NOTE: Allows main to expand */
-    padding-bottom: 140px;        /* NOTE: Extra space so footer doesn't overlap */
-  }
+    .page-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, .12), 0 3px 10px rgba(15, 23, 42, .08);
+      padding: 2.5rem;
+    }
 
-  footer { 
-    flex-shrink: 0;               /* NOTE: Footer stays at bottom */
-    margin-top: auto; 
-  }
+    .hero-intro {
+      background: linear-gradient(135deg, #eef4ff 0%, #fef9ff 50%, #ecf3ff 100%);
+      border-radius: 22px;
+      padding: 1.5rem 2rem;
+      border: 1px solid rgba(99, 123, 255, .15);
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-  .app-footer { 
-    background-color: #0b2131;    /* NOTE: Dark-themed footer */
-    color: #e6edf3; 
-  }
+    .hero-intro::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle at top right, rgba(255, 143, 223, .35), transparent 70%);
+      top: -80px;
+      right: -60px;
+      border-radius: 50%;
+    }
 
-  .app-footer a { 
-    color: #e6edf3;               /* NOTE: Footer link color */
-    text-decoration: none; 
-  }
+    .hero-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d6efd, #54a9ff);
+      color: #fff;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 25px rgba(13, 110, 253, .35);
+    }
 
-  .app-footer a:hover { 
-    text-decoration: underline;   /* NOTE: Hover effect */
-  }
+    .hero-text h2 { margin-bottom: .4rem; font-weight: 700; color: #101828; }
+    .hero-text p { margin: 0; color: #475467; }
 
-  .app-footer-gradient { 
-    height: 4px; 
-    background: linear-gradient(
-      90deg,
-      var(--bs-primary, #0d6efd),
-      var(--bs-info, #0dcaf0),
-      var(--bs-success, #198754),
-      var(--bs-warning, #ffc107),
-      var(--bs-danger, #dc3545)
-    );  /* NOTE: Color gradient bar */
-  }
+    .hero-badge {
+      background: rgba(99, 123, 255, .12);
+      color: #4154ff;
+      padding: .25rem .85rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
 
-  .app-footer-inner { 
-    font-size: .95rem;            /* NOTE: Footer text size */
-  }
-</style>
+    .btn-pill {
+      border-radius: 999px;
+      padding: .55rem 1.6rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+    }
 
-<%- include('partials/footer') %> <!-- NOTE: Render footer partial -->
+    .current-image-preview img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 18px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      padding: .5rem;
+    }
+
+    .app-footer { background-color: #0b2131; color: #e6edf3; }
+    .app-footer a { color: #e6edf3; text-decoration: none; }
+    .app-footer a:hover { text-decoration: underline; }
+    .app-footer-fixed { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030; }
+    .app-footer-gradient { height: 4px; background: linear-gradient(90deg, var(--bs-primary, #0d6efd), var(--bs-info, #0dcaf0), var(--bs-success, #198754), var(--bs-warning, #ffc107), var(--bs-danger, #dc3545)); }
+    .app-footer-inner { font-size: .95rem; }
+  </style>
+
+  <%- include('partials/footer', { footerClass: 'app-footer-fixed' }) %>
 
 </body>
 </html>
